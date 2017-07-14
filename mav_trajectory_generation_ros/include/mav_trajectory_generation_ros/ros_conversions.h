@@ -23,6 +23,11 @@
 
 #include <planning_msgs/PolynomialTrajectory4D.h>
 #include <planning_msgs/conversions.h>
+#include <mav_trajectory_generation_ros/trajectory_sampling.h>
+#include "mav_trajectory_generation_ros/PVAJS.h"
+#include "mav_trajectory_generation_ros/PVAJS_array.h"
+// #include "../../src/HelperFunctions/QuatRotEuler.h"
+#include "../../src/HelperFunctions/helper.h"
 
 #include <mav_trajectory_generation/trajectory.h>
 
@@ -35,6 +40,15 @@ bool trajectoryToPolynomialTrajectoryMsg(
 // Converts a ROS polynomial trajectory msg into a Trajectory.
 bool polynomialTrajectoryMsgToTrajectory(
     const planning_msgs::PolynomialTrajectory4D& msg, Trajectory* trajectory);
+
+// Converts a set of Flat States into PVAJS_array.
+bool EigenTrajectoryPoint2PVAJS_array(
+	const mav_msgs::EigenTrajectoryPoint::Vector states,
+    mav_trajectory_generation_ros::PVAJS_array *flatStates);
+
+bool PVAJS_array2EigenTrajectoryPoint(
+    const mav_trajectory_generation_ros::PVAJS_array flatStates,
+    mav_msgs::EigenTrajectoryPoint::Vector *states);
 
 }  // namespace mav_trajectory_generation
 

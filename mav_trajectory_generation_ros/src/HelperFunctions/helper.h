@@ -7,6 +7,12 @@
 //Function to help setting data into a ROS Vector3
 geometry_msgs::Vector3 SetVector3(float x, float y, float z);
 
+//Setting data into a ROS Vector3 from an Eigen vector
+geometry_msgs::Vector3 Eigen2Vector3(Eigen::Vector3d EigVec);
+
+//Setting data into an Eigen vector from a ROS Point
+ Eigen::Vector3d Vector3_2Eigen(geometry_msgs::Vector3 Vec3);
+
 //Function to help adding two ROS Vector3
 geometry_msgs::Vector3 AddVector3(geometry_msgs::Vector3 Vec1,
                                   geometry_msgs::Vector3 Vec2);
@@ -26,6 +32,12 @@ geometry_msgs::Point Vec3_2_Point(geometry_msgs::Vector3 Vec3);
 
 //Function to set data into a ROS Point
 geometry_msgs::Point SetPoint(float x, float y, float z);
+
+//Setting data into a ROS Point from an Eigen vector
+geometry_msgs::Point Eigen2Point(Eigen::Vector3d EigVec);
+
+//Setting data into an Eigen vector from a ROS Point
+ Eigen::Vector3d Point2Eigen(geometry_msgs::Point Pt);
 
 //Function to add two ROS Points
 geometry_msgs::Point AddPoint(geometry_msgs::Point Pt1,

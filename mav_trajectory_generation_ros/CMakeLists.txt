@@ -65,22 +65,27 @@ generate_messages( DEPENDENCIES
 ############
 cs_add_executable(trajectory_sampler_node
   src/trajectory_sampler_node.cpp
+  src/HelperFunctions/helper.cpp
 )
 target_link_libraries(trajectory_sampler_node ${PROJECT_NAME} ${CHOLMOD_LIBRARIES} ${SPQR_LIBRARIES})
 
 add_executable(minSnap_Node src/minSnapNode.cpp
                             src/trajectory_sampling.cpp
                             src/ros_visualization.cpp
+                            src/ros_conversions.cpp
                             src/minSnapFunctions/minSnapFcns.cpp
                             src/HelperFunctions/helper.cpp
                             src/HelperFunctions/QuatRotEuler.cpp)
+add_dependencies(minSnap_Node msg_pkg_generate_messages_cpp)
 target_link_libraries(minSnap_Node ${catkin_LIBRARIES} ${CHOLMOD_LIBRARIES} ${SPQR_LIBRARIES})
 
 add_executable(client_Node src/minSnapClient.cpp
                            src/trajectory_sampling.cpp
                            src/ros_visualization.cpp
+                           src/ros_conversions.cpp
                            src/HelperFunctions/helper.cpp
                            src/HelperFunctions/QuatRotEuler.cpp)
+add_dependencies(client_Node msg_pkg_generate_messages_cpp)
 target_link_libraries(client_Node ${catkin_LIBRARIES} ${CHOLMOD_LIBRARIES} ${SPQR_LIBRARIES})
 
 

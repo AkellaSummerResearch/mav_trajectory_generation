@@ -91,4 +91,41 @@ bool polynomialTrajectoryMsgToTrajectory(
   return true;
 }
 
+bool EigenTrajectoryPoint2PVAJS_array(
+  const mav_msgs::EigenTrajectoryPoint::Vector states,
+    mav_trajectory_generation_ros::PVAJS_array *flatStates){
+
+  mav_trajectory_generation_ros::PVAJS flatState;
+  for (int i = 0; i < states.size(); i++){
+    flatState.Pos = Eigen2Point(states[i].position_W);
+    flatState.Vel = Eigen2Vector3(states[i].velocity_W);
+    flatState.Acc = Eigen2Vector3(states[i].acceleration_W);
+    flatState.Jerk = Eigen2Vector3(states[i].jerk_W);
+    flatState.Snap = Eigen2Vector3(states[i].snap_W);
+    flatState.time = ros::Time().fromNSec(states[i].time_from_start_ns).toSec();
+    flatStates->PVAJS_array.push_back(flatState);
+   }
+
+  return true;
+}
+
+bool PVAJS_array2EigenTrajectoryPoint(
+    const mav_trajectory_generation_ros::PVAJS_array flatStates,
+    mav_msgs::EigenTrajectoryPoint::Vector *states){
+    
+
+  mav_msgs::EigenTrajectoryPoint state;
+  for (int i = 0; i < flatStates.PVAJS_array.size(); i++){
+    state.position_W = Point2Eigen(flatStates.PVAJS_array[i].Pos);
+    state.velocity_W = Vector3_2Eigen(flatStates.PVAJS_array[i].Vel);
+    state.acceleration_W = Vector3_2Eigen(flatStates.PVAJS_array[i].Acc);
+    state.jerk_W = Vector3_2Eigen(flatStates.PVAJS_array[i].Jerk);
+    state.snap_W = Vector3_2Eigen(flatStates.PVAJS_array[i].Snap);
+    state.time_from_start_ns = flatStates.PVAJS_array[i].time;
+    states->push_back(state);
+   }
+
+  return true;
+}
+
 }  // namespace mav_trajectory_generation

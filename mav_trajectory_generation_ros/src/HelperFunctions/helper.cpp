@@ -8,6 +8,20 @@ geometry_msgs::Vector3 SetVector3(float x, float y, float z){
 	return Vec;
 }
 
+geometry_msgs::Vector3 Eigen2Vector3(Eigen::Vector3d EigVec){
+	geometry_msgs::Vector3 Vec;
+	Vec.x = EigVec[0];
+	Vec.y = EigVec[1];
+	Vec.z = EigVec[2];
+	return Vec;
+}
+
+Eigen::Vector3d Vector3_2Eigen(geometry_msgs::Vector3 Vec3){
+	Eigen::Vector3d EigVec3;
+	EigVec3 << Vec3.x, Vec3.y, Vec3.z;
+	return EigVec3;
+}
+
 geometry_msgs::Vector3 AddVector3(geometry_msgs::Vector3 Vec1, 
 	                              geometry_msgs::Vector3 Vec2){
 	geometry_msgs::Vector3 Vec_out;
@@ -54,6 +68,20 @@ geometry_msgs::Point SetPoint(float x, float y, float z){
 	Pt.y = y;
 	Pt.z = z;
 	return Pt;
+}
+
+geometry_msgs::Point Eigen2Point(Eigen::Vector3d EigVec){
+	geometry_msgs::Point Pt;
+	Pt.x = EigVec[0];
+	Pt.y = EigVec[1];
+	Pt.z = EigVec[2];
+	return Pt;
+}
+
+Eigen::Vector3d Point2Eigen(geometry_msgs::Point Pt){
+	Eigen::Vector3d Vec3;
+	Vec3 << Pt.x, Pt.y, Pt.z;
+	return Vec3;
 }
 
 geometry_msgs::Point AddPoint(geometry_msgs::Point Pt1,

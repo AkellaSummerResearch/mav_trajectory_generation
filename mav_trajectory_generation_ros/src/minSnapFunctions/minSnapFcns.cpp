@@ -34,25 +34,26 @@ void waypoint2vertex_minSnap(const nav_msgs::Path Waypoints,
 void trajectory2waypoint(
 	const mav_trajectory_generation::Trajectory trajectory,
 	const double dt,
-	nav_msgs::Path *Waypoints){
+	nav_msgs::Path *Waypoints,
+  mav_trajectory_generation_ros::PVAJS_array *flatStates){
 
-  //Sample trajectory
-  double t_start = 0.0;
-  double t_end = trajectory.getMaxTime();
   
-  int derivative_order = mav_trajectory_generation::derivative_order::POSITION;
-  std::vector<Eigen::VectorXd> result;
-  std::vector<double> sampling_times; // Optional.
-  trajectory.evaluateRange(t_start, t_end, dt, derivative_order, &result, &sampling_times);
-
+  //Get whole trajectory
+  mav_msgs::EigenTrajectoryPoint::Vector states;
+  bool success = mav_trajectory_generation::sampleWholeTrajectory(trajectory, dt, &states);
+  if (!success) {
+    ROS_INFO("Error while sampling trajectory!");
+    return;
+  }
 
   //Populate waypoints to send back
   geometry_msgs::PoseStamped Pos;
-  Eigen::VectorXd Waypoint;
-  for (int i = 0; i < result.size(); i++){
-    Waypoint = result[i];
-    Pos.pose.position = SetPoint(Waypoint[0], Waypoint[1], Waypoint[2]);
-    Pos.header.stamp = ros::Time().fromSec(sampling_times[i]);
+  mav_trajectory_generation_ros::PVAJS flatState;
+
+  mav_trajectory_generation::EigenTrajectoryPoint2PVAJS_array(states, flatStates);
+  for (int i = 0; i < states.size(); i++){
+    Pos.pose.position = Eigen2Point(states[i].position_W);
+    Pos.header.stamp = ros::Time().fromNSec(states[i].time_from_start_ns);
     Waypoints->poses.push_back(Pos);
    }
 }

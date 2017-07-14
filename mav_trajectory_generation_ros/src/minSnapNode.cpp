@@ -6,6 +6,8 @@
 #include "HelperFunctions/helper.h"
 #include "HelperFunctions/QuatRotEuler.h"
 #include "minSnapFunctions/minSnapFcns.h"
+#include "mav_trajectory_generation_ros/PVAJS.h"
+#include "mav_trajectory_generation_ros/PVAJS_array.h"
 
 
 #include <sstream>
@@ -22,7 +24,7 @@ bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req
   ros::Time t0 = ros::Time::now();
 
   // //Declare initial variables
-  const int n_w = req.input.poses.size(); //Number of waypoints
+  const int n_w = req.Waypoints.poses.size(); //Number of waypoints
   const int dimension = 3;
   const int derivative_to_optimize = mav_trajectory_generation::derivative_order::SNAP;
   const double dt = 0.01; //Output sampling period
@@ -30,7 +32,7 @@ bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req
 
   //Get waypoints into vertex
   mav_trajectory_generation::Vertex::Vector vertices;
-  waypoint2vertex_minSnap(req.input, dimension,
+  waypoint2vertex_minSnap(req.Waypoints, dimension,
                           derivative_to_optimize, &vertices);
 
 
@@ -38,7 +40,7 @@ bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req
   std::vector<double> segment_times;
   int diff_time;
   for (int i = 1; i < n_w; i++){
-    diff_time = (req.input.poses[i].header.stamp - req.input.poses[i-1].header.stamp).toSec();
+    diff_time = (req.Waypoints.poses[i].header.stamp - req.Waypoints.poses[i-1].header.stamp).toSec();
     segment_times.push_back(diff_time);
   }
 
@@ -49,9 +51,11 @@ bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req
 
   //Sample trajectory
   nav_msgs::Path Waypoints;
-  trajectory2waypoint(trajectory, dt, &Waypoints);
+  mav_trajectory_generation_ros::PVAJS_array flatStates;
+  trajectory2waypoint(trajectory, dt, &Waypoints, &flatStates);
 
   //Output
+  res.flatStates = flatStates;
   res.output = Waypoints;
   
   //Calculate solution time
