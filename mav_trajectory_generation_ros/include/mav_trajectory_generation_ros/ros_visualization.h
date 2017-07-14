@@ -24,6 +24,7 @@
 #include <mav_msgs/eigen_mav_msgs.h>
 #include <mav_visualization/marker_group.h>
 #include <visualization_msgs/MarkerArray.h>
+#include "nav_msgs/Path.h"
 
 #include <mav_trajectory_generation/trajectory.h>
 #include <mav_trajectory_generation/vertex.h>
@@ -54,6 +55,20 @@ void drawMavSampledTrajectoryWithMavMarker(
     const mav_msgs::EigenTrajectoryPoint::Vector& flat_states, double distance,
     const std::string& frame_id,
     const mav_visualization::MarkerGroup& additional_marker,
+    visualization_msgs::MarkerArray* marker_array);
+
+void drawTrajectoryFromWaypoints(
+    const nav_msgs::Path Waypoints, 
+    const std::string& frame_id,
+    visualization_msgs::MarkerArray* marker_array);
+
+void drawWaypoints(
+    const nav_msgs::Path Waypoints, 
+    const std::string& frame_id,
+    visualization_msgs::MarkerArray* marker_array);
+
+void deleteMarkersTemplate(
+    const std::string& frame_id,
     visualization_msgs::MarkerArray* marker_array);
 
 // Visualize original vertices.

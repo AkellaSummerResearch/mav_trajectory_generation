@@ -18,11 +18,11 @@
  * limitations under the License.
  */
 
+#include "mav_trajectory_generation_ros/ros_visualization.h"
 #include <eigen_conversions/eigen_msg.h>
 #include <mav_msgs/conversions.h>
 #include <mav_visualization/helpers.h>
 
-#include "mav_trajectory_generation_ros/ros_visualization.h"
 #include "mav_trajectory_generation_ros/trajectory_sampling.h"
 
 namespace mav_trajectory_generation {
@@ -165,6 +165,149 @@ void drawMavSampledTrajectoryWithMavMarker(
                                 marker_array);
 }
 
+void drawTrajectoryFromWaypoints(
+    const nav_msgs::Path Waypoints, 
+    const std::string& frame_id,
+    visualization_msgs::MarkerArray* marker_array) {
+  CHECK_NOTNULL(marker_array);
+  marker_array->markers.clear();
+
+  visualization_msgs::Marker line_strip;
+  line_strip.type = visualization_msgs::Marker::LINE_STRIP;
+  line_strip.color = mav_visualization::Color::Orange();
+  line_strip.scale.x = 0.01;
+  line_strip.ns = "path";
+
+  //Get the number of requested waypoints
+  int n_w = Waypoints.poses.size();
+
+  // double accumulated_distance = 0.0;
+  // Eigen::Vector3d last_position = Eigen::Vector3d::Zero();
+  Eigen::Vector3d CurPoint;
+  for (size_t i = 0; i < n_w; ++i) {
+    CurPoint << Waypoints.poses[i].pose.position.x,
+                Waypoints.poses[i].pose.position.y,
+                Waypoints.poses[i].pose.position.z;
+    // accumulated_distance += (last_position - CurPoint).norm();
+    // if (accumulated_distance > distance) {
+    //   accumulated_distance = 0.0;
+//       mav_msgs::EigenMavState mav_state;
+//       mav_msgs::EigenMavStateFromEigenTrajectoryPoint(flat_state, &mav_state);
+
+// void EigenMavStateFromEigenTrajectoryPoint(
+//     const Eigen::Vector3d& acceleration, 
+//     const Eigen::Vector3d& jerk,
+//     const Eigen::Vector3d& snap, 
+//     double yaw, 
+//     double yaw_rate,
+//     double yaw_acceleration, 
+//     double magnitude_of_gravity,
+//     Eigen::Quaterniond* orientation, 
+//     Eigen::Vector3d* acceleration_body,
+//     Eigen::Vector3d* angular_velocity_body,
+//     Eigen::Vector3d* angular_acceleration_body)
+
+//       visualization_msgs::MarkerArray axes_arrows;
+//       mav_visualization::drawAxesArrows(mav_state.position_W,
+//                                         mav_state.orientation_W_B, 0.3, 0.3,
+//                                         &axes_arrows);
+//       internal::appendMarkers(axes_arrows, "pose", marker_array);
+
+//       visualization_msgs::Marker arrow;
+//       mav_visualization::drawArrowPoints(
+//           flat_state.position_W,
+//           flat_state.position_W + flat_state.acceleration_W,
+//           mav_visualization::Color((190.0 / 255.0), (81.0 / 255.0),
+//                                    (80.0 / 255.0)),
+//           0.3, &arrow);
+//       arrow.ns = positionDerivativeToString(derivative_order::ACCELERATION);
+//       marker_array->markers.push_back(arrow);
+
+//       mav_visualization::drawArrowPoints(
+//           flat_state.position_W, flat_state.position_W + flat_state.velocity_W,
+//           mav_visualization::Color((80.0 / 255.0), (172.0 / 255.0),
+//                                    (196.0 / 255.0)),
+//           0.3, &arrow);
+//       arrow.ns = positionDerivativeToString(derivative_order::VELOCITY);
+//       marker_array->markers.push_back(arrow);
+
+//       mav_visualization::MarkerGroup tmp_marker(additional_marker);
+//       tmp_marker.transform(mav_state.position_W, mav_state.orientation_W_B);
+//       tmp_marker.getMarkers(marker_array->markers, 1.0, true);
+//     }
+//     last_position = flat_state.position_W;
+    geometry_msgs::Point last_position_msg;
+    tf::pointEigenToMsg(CurPoint, last_position_msg);
+    line_strip.points.push_back(last_position_msg);
+  }
+  marker_array->markers.push_back(line_strip);
+
+  std_msgs::Header header;
+  header.frame_id = frame_id;
+  header.stamp = ros::Time::now();
+  internal::setMarkerProperties(header, 0.0, visualization_msgs::Marker::ADD,
+                                marker_array);
+}
+
+void drawWaypoints(
+    const nav_msgs::Path Waypoints, 
+    const std::string& frame_id,
+    visualization_msgs::MarkerArray* marker_array) {
+  CHECK_NOTNULL(marker_array);
+  marker_array->markers.clear();
+
+  visualization_msgs::Marker line_strip;
+  line_strip.type = visualization_msgs::Marker::SPHERE;
+  line_strip.action = visualization_msgs::Marker::ADD;
+  line_strip.color = mav_visualization::Color::Red();
+  line_strip.scale.x = 0.1;
+  line_strip.scale.y = 0.1;
+  line_strip.scale.z = 0.1;
+  line_strip.ns = "waypoints";
+  line_strip.header.frame_id = frame_id;
+  line_strip.header.stamp = ros::Time::now();
+  line_strip.pose.orientation.w = 1.0;
+
+  //Get the number of requested waypoints
+  int n_w = Waypoints.poses.size();
+
+  Eigen::Vector3d CurPoint;
+  for (size_t i = 0; i < n_w; ++i) {
+    CurPoint << Waypoints.poses[i].pose.position.x,
+                Waypoints.poses[i].pose.position.y,
+                Waypoints.poses[i].pose.position.z;
+
+    geometry_msgs::Point last_position_msg;
+    tf::pointEigenToMsg(CurPoint, last_position_msg);
+    line_strip.pose.position = last_position_msg;
+    line_strip.header.seq = i;
+    // line_strip.points.push_back(last_position_msg);
+    marker_array->markers.push_back(line_strip);
+    // line_strip.colors.push_back(line_strip.color);
+  }
+  
+
+  std_msgs::Header header;
+  header.frame_id = frame_id;
+  header.stamp = ros::Time::now();
+  internal::setMarkerProperties(header, 0.0, visualization_msgs::Marker::ADD,
+                                marker_array);
+}
+
+void deleteMarkersTemplate(
+    const std::string& frame_id,
+    visualization_msgs::MarkerArray* marker_array){
+  
+  visualization_msgs::Marker deleteMarker;
+  deleteMarker.action = deleteMarker.DELETEALL;
+  deleteMarker.scale.x = 0.1;
+  deleteMarker.scale.y = 0.1;
+  deleteMarker.scale.z = 0.1;
+  deleteMarker.header.frame_id = frame_id;
+  deleteMarker.ns = "path";
+  marker_array->markers.push_back(deleteMarker);
+}
+
 void drawVertices(const Vertex::Vector& vertices, const std::string& frame_id,
                   visualization_msgs::MarkerArray* marker_array) {
   CHECK_NOTNULL(marker_array);
@@ -173,7 +316,7 @@ void drawVertices(const Vertex::Vector& vertices, const std::string& frame_id,
 
   marker.type = visualization_msgs::Marker::LINE_STRIP;
   marker.color = mav_visualization::Color::Chartreuse();
-  marker.scale.x = 0.01;
+  marker.scale.x = 0.2;
   marker.ns = "straight_path";
 
   for (const Vertex& vertex : vertices) {

@@ -23,4 +23,8 @@
   <depend>mav_visualization</depend>
   <depend>planning_msgs</depend>
   <depend>eigen_checks</depend>
+
+  <buildtool_depend>nav_msgs</buildtool_depend>
+  <depend>nav_msgs</depend>
+
 </package>

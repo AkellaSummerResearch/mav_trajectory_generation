@@ -23,6 +23,7 @@
 
 #include <glog/logging.h>
 #include <Eigen/Sparse>
+#include <Eigen/SPQRSupport>
 #include <set>
 #include <tuple>
 
@@ -352,9 +353,15 @@ bool PolynomialOptimization<_N>::solveLinear() {
   Eigen::SparseMatrix<double> Rpp =
       R.block(n_fixed_constraints_, n_fixed_constraints_, n_free_constraints_,
               n_free_constraints_);
-  Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>
-      solver;
+
+  // int n_cores = Eigen::nbThreads( );
+  // std::cout << "Number of cores: " << n_cores << std::endl;
+
+  Eigen::SPQR< Eigen::SparseMatrix<double> > solver;
   solver.compute(Rpp);
+  // Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>
+  //     solver;
+  // solver.compute(Rpp);
 
   // Compute dp_opt for every dimension.
   for (size_t dimension_idx = 0; dimension_idx < dimension_; ++dimension_idx) {
