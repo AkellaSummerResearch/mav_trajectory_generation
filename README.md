@@ -7,6 +7,10 @@ This README provides a brief overview of our trajectory generation utilities wit
 **Maintainer**: Rik Bähnemann, brik@ethz.ch  
 **Affiliation**: Autonomous Systems Lab, ETH Zurich
 
+# Modifications in this branch
+
+I made some additions to the original code so that it offers ROS services for calculating minimum snap. I also sped up the linear solution by using multi-core optimization (using SPQR from Suitesparse). 
+
 ## Bibliography
 This implementation is largely based on the work of C. Richter *et al*, who should be cited if this is used in a scientific publication (or the preceding conference papers):
 [1] C. Richter, A. Bry, and N. Roy, “**Polynomial trajectory planning for aggressive quadrotor flight in dense indoor environments,**” in *International Journal of Robotics Research*, Springer, 2016.
@@ -40,7 +44,9 @@ To install this package with [ROS Indigo](http://wiki.ros.org/indigo/Installatio
 1. Install additional system dependencies (swap indigo for kinetic as necessary):
 
 ```
+sudo apt-get update
 sudo apt-get install python-wstool python-catkin-tools ros-indigo-cmake-modules
+sudo apt-get install libsuitesparse-dev
 ```
 
 2. Set up a catkin workspace (if not already done):
@@ -54,23 +60,25 @@ catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
 catkin config --merge-devel
 ```
 
-3. Install the repository and its dependencies (with rosinstall):
+3. Install the repository and its dependencies  (the original branch had a catkin build that wasn't working. I install everything by building the necessary repos one by one):
 
 ```
-cd src
-wstool init
-wstool set --git mav_trajectory_generation git@github.com:ethz-asl/mav_trajectory_generation.git -y
-wstool update
-wstool merge mav_trajectory_generation/install/mav_trajectory_generation.rosinstall
-wstool update -j8
-echo "source ~/catkin_ws/devel/setup.bash" >> ~/.bashrc
-source ~/.bashrc
-```
-
-4. Use [catkin_build](http://catkin-tools.readthedocs.io/en/latest/verbs/catkin_build.html) to build the repository:
-
-```
-catkin build
+cd ~/catkin_ws/src
+git clone https://github.com/ethz-asl/nlopt.git
+git clone https://github.com/ethz-asl/mav_comm.git
+git clone https://github.com/catkin/catkin_simple.git
+git clone https://github.com/ethz-asl/eigen_catkin.git
+git clone https://github.com/ethz-asl/eigen_checks.git
+cd ~/catkin_ws
+catkin_make
+cd ~/catkin_ws/src
+git clone https://github.com/ethz-asl/glog_catkin.git
+cd ~/catkin_ws
+catkin_make
+cd ~/catkin_ws/src
+git clone https://github.com/marcelinomalmeidan/mav_trajectory_generation.git
+cd ~/catkin_ws
+catkin_make
 ```
 
 
