@@ -12,10 +12,8 @@
 
 #include <sstream>
 
-
-
-bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req,
-                    mav_trajectory_generation_ros::minSnapStamped::Response &res)
+bool minSnapOptTimeService(mav_trajectory_generation_ros::minSnapStamped::Request  &req,
+                           mav_trajectory_generation_ros::minSnapStamped::Response &res)
 {
   // omp_set_num_threads(16);
   // int n_cores = Eigen::nbThreads( );
@@ -37,11 +35,80 @@ bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req
 
 
   //Get segment times from client request
-  std::vector<double> segment_times;
+  Eigen::VectorXd segment_times = Eigen::MatrixXd::Zero(n_w-1,1);
   int diff_time;
   for (int i = 1; i < n_w; i++){
     diff_time = (req.Waypoints.poses[i].header.stamp - req.Waypoints.poses[i-1].header.stamp).toSec();
-    segment_times.push_back(diff_time);
+    segment_times(i-1) = diff_time;
+  }
+
+  //Get solution for minimum snap problem
+  mav_trajectory_generation::Trajectory trajectory;
+  cost = solveMinSnap(vertices, segment_times, dimension, 
+                      derivative_to_optimize, dt, &trajectory);
+
+  //Calculate gradient
+  int m = n_w - 1;
+  double h = 0.00001;  //Small step for time gradient
+  double costNew;
+  Eigen::VectorXd g = (-1.0/(m-1.0))*Eigen::MatrixXd::Ones(m,1);
+  Eigen::VectorXd g_i = g;
+  Eigen::VectorXd gradF = Eigen::MatrixXd::Zero(m,1);
+  Eigen::VectorXd segment_times_new = segment_times;
+  for(int i = 0; i < m; i++){
+    g_i = g;
+    g_i[i] = 1;
+    segment_times_new = segment_times + h*g_i;
+    costNew = solveMinSnap(vertices, segment_times, dimension, 
+                      derivative_to_optimize, dt, &trajectory);
+    gradF(i) = (costNew - cost)/h;
+
+  }
+
+
+  //Sample trajectory
+  nav_msgs::Path Waypoints;
+  mav_trajectory_generation_ros::PVAJS_array flatStates;
+  trajectory2waypoint(trajectory, dt, &Waypoints, &flatStates);
+
+  //Output
+  res.flatStates = flatStates;
+  res.output = Waypoints;
+  
+  //Calculate solution time
+  ros::Duration SolverTime = ros::Time::now() - t0;
+  ROS_INFO("Number of points: %d\tCalculation time: %f\tCost: %f",
+            n_w, SolverTime.toSec(), cost);
+
+//   return true;
+}
+
+bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req,
+                    mav_trajectory_generation_ros::minSnapStamped::Response &res)
+{
+
+  //Get initial time to calculate solving time
+  ros::Time t0 = ros::Time::now();
+
+  // //Declare initial variables
+  const int n_w = req.Waypoints.poses.size(); //Number of waypoints
+  const int dimension = 3;
+  const int derivative_to_optimize = mav_trajectory_generation::derivative_order::SNAP;
+  const double dt = 0.01; //Output sampling period
+  double cost;
+
+  //Get waypoints into vertex
+  mav_trajectory_generation::Vertex::Vector vertices;
+  waypoint2vertex_minSnap(req.Waypoints, dimension,
+                          derivative_to_optimize, &vertices);
+
+
+  //Get segment times from client request
+  Eigen::VectorXd segment_times = Eigen::MatrixXd::Zero(n_w-1,1);
+  int diff_time;
+  for (int i = 1; i < n_w; i++){
+    diff_time = (req.Waypoints.poses[i].header.stamp - req.Waypoints.poses[i-1].header.stamp).toSec();
+    segment_times(i-1) = diff_time;
   }
 
   //Get solution for minimum snap problem

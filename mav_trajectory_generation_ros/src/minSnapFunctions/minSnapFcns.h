@@ -23,7 +23,7 @@ void trajectory2waypoint(
 //Compute minimum snap trajectory and return minSnap cost
 double solveMinSnap(
 	const mav_trajectory_generation::Vertex::Vector vertices,
-	const std::vector<double> segment_times,
+	const Eigen::VectorXd segment_times,
 	const int dimension, 
 	const int derivative_to_optimize,
 	const double dt,

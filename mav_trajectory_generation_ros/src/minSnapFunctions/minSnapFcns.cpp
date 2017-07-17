@@ -60,16 +60,20 @@ void trajectory2waypoint(
 
 double solveMinSnap(
 	const mav_trajectory_generation::Vertex::Vector vertices,
-	const std::vector<double> segment_times,
+	const Eigen::VectorXd segment_times,
 	const int dimension, 
 	const int derivative_to_optimize,
 	const double dt,
 	mav_trajectory_generation::Trajectory *trajectory){
 
+  //Convert segment times to the appropriate type
+  std::vector<double> stdSegment_times;
+  eigenVectorXd2stdVector(segment_times, &stdSegment_times);
+
   //Solve optimization problem
   const int N = 10;
   mav_trajectory_generation::PolynomialOptimization<N> opt(dimension);
-  opt.setupFromVertices(vertices, segment_times, derivative_to_optimize);
+  opt.setupFromVertices(vertices, stdSegment_times, derivative_to_optimize);
   opt.solveLinear();
 
   //Get segments

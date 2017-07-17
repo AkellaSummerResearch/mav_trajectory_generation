@@ -148,15 +148,6 @@ Eigen::Vector3d normalizeVector3d(Eigen::Vector3d V){
 	}
 }
 
-// nav_msgs::Path getEmptyPathMsg(){
-// 	nav_msgs::Path PathMsg;
-// 	PathMsg.header.seq = 1;
-// 	PathMsg.header.stamp = ros::Time::now();
-// 	PathMsg.header.frame_id = "fcu";
-
-// 	return PathMsg;
-// }
-
 /* Minimum function */
 float min(double x, double y)
 {
@@ -184,3 +175,10 @@ double rad2deg(double radVal){
 	return radVal*180.0/M_PI;
 }
 
+void eigenVectorXd2stdVector(
+  const Eigen::VectorXd eigenVec,
+  std::vector<double> *stdVec){
+  for(int i = 0; i < eigenVec.rows(); i++){
+    stdVec->push_back(eigenVec[i]);
+  }
+}

@@ -80,3 +80,7 @@ double deg2rad(double degVal);
 //Convert radians to degrees
 double rad2deg(double radVal);
 
+//Convert a Eigen::VectorXd to a std::vector<double>
+void eigenVectorXd2stdVector(
+  const Eigen::VectorXd eigenVec,
+  std::vector<double> *stdVec);
