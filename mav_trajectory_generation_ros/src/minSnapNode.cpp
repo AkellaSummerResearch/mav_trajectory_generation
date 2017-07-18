@@ -146,6 +146,7 @@ bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req
 
   //Get initial time to calculate solving time
   ros::Time t0 = ros::Time::now();
+  ros::Duration SolverTime;
 
   // //Declare initial variables
   const int n_w = req.Waypoints.poses.size(); //Number of waypoints
@@ -168,12 +169,17 @@ bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req
     segment_times(i-1) = diff_time;
   }
 
+  //Calculate solution time
+  SolverTime = ros::Time::now() - t0;
+  ROS_INFO("Number of points: %d\tCalculation time so far: %f",
+            n_w, SolverTime.toSec());
+
   //Get solution for minimum snap problem
   mav_trajectory_generation::Trajectory trajectory;
   cost = solveMinSnap(vertices, segment_times, dimension, &trajectory);
 
   //Calculate solution time
-  ros::Duration SolverTime = ros::Time::now() - t0;
+  SolverTime = ros::Time::now() - t0;
   ROS_INFO("Number of points: %d\tCalculation time: %f\tCost: %f",
             n_w, SolverTime.toSec(), cost);
 
