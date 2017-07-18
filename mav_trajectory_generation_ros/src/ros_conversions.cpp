@@ -96,6 +96,7 @@ bool EigenTrajectoryPoint2PVAJS_array(
     mav_trajectory_generation_ros::PVAJS_array *flatStates){
 
   mav_trajectory_generation_ros::PVAJS flatState;
+  flatStates->PVAJS_array.resize(states.size());
   for (int i = 0; i < states.size(); i++){
     flatState.Pos = Eigen2Point(states[i].position_W);
     flatState.Vel = Eigen2Vector3(states[i].velocity_W);
@@ -103,7 +104,7 @@ bool EigenTrajectoryPoint2PVAJS_array(
     flatState.Jerk = Eigen2Vector3(states[i].jerk_W);
     flatState.Snap = Eigen2Vector3(states[i].snap_W);
     flatState.time = ros::Time().fromNSec(states[i].time_from_start_ns).toSec();
-    flatStates->PVAJS_array.push_back(flatState);
+    flatStates->PVAJS_array[i] = flatState;
    }
 
   return true;

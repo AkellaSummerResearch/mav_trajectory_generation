@@ -112,7 +112,7 @@ void drawMavSampledTrajectoryWithMavMarker(
   line_strip.scale.x = 0.01;
   line_strip.ns = "path";
 
-  double accumulated_distance = 0.0;
+  double accumulated_distance = distance;
   Eigen::Vector3d last_position = Eigen::Vector3d::Zero();
   for (size_t i = 0; i < flat_states.size(); ++i) {
     const mav_msgs::EigenTrajectoryPoint& flat_state = flat_states[i];

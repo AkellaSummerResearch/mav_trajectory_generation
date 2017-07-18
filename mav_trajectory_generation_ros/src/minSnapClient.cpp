@@ -40,30 +40,35 @@ int main(int argc, char **argv)
   mav_trajectory_generation::deleteMarkersTemplate(frame_id, &deleteMarkers);
 
   //Service client
-  ros::ServiceClient client = n.serviceClient<mav_trajectory_generation_ros::minSnapStamped>("/minSnap");
+  ros::ServiceClient client0 = n.serviceClient<mav_trajectory_generation_ros::minSnapStamped>("/minSnap");
+  ros::ServiceClient client1 = n.serviceClient<mav_trajectory_generation_ros::minSnapStamped>("/minSnapNlopt");
+  ros::ServiceClient client2 = n.serviceClient<mav_trajectory_generation_ros::minSnapStamped>("/minSnapOptTime");
   mav_trajectory_generation_ros::minSnapStamped srv;
 
   //Populate waypoints
   geometry_msgs::PoseStamped Pos;
-  int n_waypoints = 20;
+  int n_waypoints = 10;
 
-  // for (int j = 0; j < 200; j = j + 100){
-    // n_waypoints = 100 + j;
+  ros::Rate loop_rate(1);
+
+  // for (int j = 0; j < 100; j = j + 10){
+  //   n_waypoints = 10 + j;
 
     nav_msgs::Path Waypoints;
 
     for(int i = 0; i < n_waypoints; i++){
-      Eigen::Vector3d p = Eigen::Vector3d::Random();
+      // Eigen::Vector3d p = Eigen::Vector3d::Random();
       // Pos.pose.position = SetPoint(p(0), p(1), p(2));
-      // Pos.pose.position = SetPoint(pow(float(i)/3.0,2), float(i)/5.0, float(i)/10.0);
+      // Pos.pose.position = SetPoint(pow(float(i)/10.0,2), float(i)/5.0, float(i)/10.0);
       Pos.pose.position = SetPoint(2.0*sin(float(i)/3.0), 2.0*cos(float(i)/3.0), float(i)/10.0);
-      Pos.header.stamp = ros::Time().fromSec(float(i));
+      Pos.header.stamp = ros::Time().fromSec(double(i));
+      // std::cout << Pos.header.stamp.sec << " " << Pos.header.stamp.nsec << std::endl;
       // Pos.pose.position = SetPoint(float(i), float(i), float(i));
       Waypoints.poses.push_back(Pos);
     }
 
     srv.request.Waypoints = Waypoints;
-    if (client.call(srv))
+    if (client2.call(srv))
     {
       ROS_INFO("Service returned succesfully! Publishing Markers...");
       
@@ -71,7 +76,6 @@ int main(int argc, char **argv)
       int distance = 1.0;
       mav_msgs::EigenTrajectoryPoint::Vector states;
       mav_trajectory_generation::PVAJS_array2EigenTrajectoryPoint(srv.response.flatStates, &states);
-      nav_msgs::Path Path_out = srv.response.output;
       mav_trajectory_generation_ros::PVAJS_array flatStates = srv.response.flatStates;
       mav_trajectory_generation::drawWaypoints(Waypoints, frame_id, &WaypointMarkers);
       mav_trajectory_generation::drawMavSampledTrajectory(states, distance, frame_id, &TrajMarkers);
@@ -82,9 +86,11 @@ int main(int argc, char **argv)
       wpMarker_pub.publish(deleteMarkers.markers[0]);
       ros::spinOnce();
 
+      loop_rate.sleep();
+
       //Publish current markers
-      int n_waypoints = WaypointMarkers.markers.size();
       pathMarker_pub.publish(TrajMarkers);
+      int n_waypoints = WaypointMarkers.markers.size();
       for (int j = 0; j < n_waypoints; j++){
           wpMarker_pub.publish(WaypointMarkers.markers[j]);
       }
@@ -101,7 +107,7 @@ int main(int argc, char **argv)
 
   
 
-  ros::Rate loop_rate(1);
+  
 
   while (ros::ok())
   {

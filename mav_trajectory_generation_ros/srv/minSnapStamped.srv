@@ -1,4 +1,3 @@
 nav_msgs/Path Waypoints
 ---
-nav_msgs/Path output
 mav_trajectory_generation_ros/PVAJS_array flatStates
