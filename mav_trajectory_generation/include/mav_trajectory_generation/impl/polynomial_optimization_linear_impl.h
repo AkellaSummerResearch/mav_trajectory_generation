@@ -26,6 +26,7 @@
 #include <Eigen/SPQRSupport>
 #include <set>
 #include <tuple>
+#include "ros/ros.h"
 
 #include "mav_trajectory_generation/convolution.h"
 
@@ -94,8 +95,11 @@ bool PolynomialOptimization<_N>::setupFromVertices(
       vertex = vertex_tmp;
     }
   }
+  ROS_INFO("out of the for loop");
   updateSegmentTimes(times);
+  ROS_INFO("returning1");
   setupConstraintReorderingMatrix();
+  ROS_INFO("returning2");
   return true;
 }
 
@@ -273,6 +277,7 @@ void PolynomialOptimization<_N>::updateSegmentsFromCompactConstraints() {
   }
 }
 
+
 template <int _N>
 void PolynomialOptimization<_N>::updateSegmentTimes(
     const std::vector<double>& segment_times) {
@@ -356,9 +361,13 @@ bool PolynomialOptimization<_N>::solveLinear() {
 
   // int n_cores = Eigen::nbThreads( );
   // std::cout << "Number of cores: " << n_cores << std::endl;
-
+ROS_INFO("before compute");
   Eigen::SPQR< Eigen::SparseMatrix<double> > solver;
   solver.compute(Rpp);
+  
+  // std::cout << Rpp << std::endl;
+  // std::cout << n_free_constraints_ << std::endl;
+  // std::cout << n_fixed_constraints_ << std::endl;
   // Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>>
   //     solver;
   // solver.compute(Rpp);
@@ -370,8 +379,9 @@ bool PolynomialOptimization<_N>::solveLinear() {
     free_constraints_compact_[dimension_idx] =
         solver.solve(df);  // dp = -Rpp^-1 * Rpf * df
   }
-
+ROS_INFO("after compute");
   updateSegmentsFromCompactConstraints();
+  ROS_INFO("after compute2");
   return true;
 }
 

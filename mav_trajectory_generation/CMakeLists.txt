@@ -1,7 +1,9 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(mav_trajectory_generation)
 
-find_package(catkin_simple REQUIRED)
+find_package(catkin_simple REQUIRED
+  cmake_modules
+  roscpp)
 catkin_simple(ALL_DEPS_REQUIRED)
 
 set(CMAKE_MACOSX_RPATH 0)
@@ -14,6 +16,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 find_package(Cholmod REQUIRED)
 find_package(SPQR REQUIRED)
+
 
 include_directories(
   ${EIGEN3_INCLUDE_DIR}

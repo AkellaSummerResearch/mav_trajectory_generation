@@ -51,8 +51,8 @@ int main(int argc, char **argv)
 
   ros::Rate loop_rate(1);
 
-  for (int j = 0; j < 2000; j = j + 100){
-    n_waypoints = 100 + j;
+  // for (int j = 0; j < 2000; j = j + 100){
+  //   n_waypoints = 100 + j;
 
     nav_msgs::Path Waypoints;
 
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
     }
 
 
-  }  
+  // }  
 
   
 
