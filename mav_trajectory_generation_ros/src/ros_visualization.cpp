@@ -181,15 +181,15 @@ void drawTrajectoryFromWaypoints(
   //Get the number of requested waypoints
   int n_w = Waypoints.poses.size();
 
-  double accumulated_distance = distance;
+  // double accumulated_distance = distance;
   // Eigen::Vector3d last_position = Eigen::Vector3d::Zero();
   Eigen::Vector3d CurPoint;
   for (size_t i = 0; i < n_w; ++i) {
     CurPoint << Waypoints.poses[i].pose.position.x,
                 Waypoints.poses[i].pose.position.y,
                 Waypoints.poses[i].pose.position.z;
-    accumulated_distance += (last_position - CurPoint).norm();
-    if (accumulated_distance > distance) {
+    // accumulated_distance += (last_position - CurPoint).norm();
+    // if (accumulated_distance > distance) {
     //   accumulated_distance = 0.0;
 //       mav_msgs::EigenMavState mav_state;
 //       mav_msgs::EigenMavStateFromEigenTrajectoryPoint(flat_state, &mav_state);
@@ -234,7 +234,7 @@ void drawTrajectoryFromWaypoints(
 //       mav_visualization::MarkerGroup tmp_marker(additional_marker);
 //       tmp_marker.transform(mav_state.position_W, mav_state.orientation_W_B);
 //       tmp_marker.getMarkers(marker_array->markers, 1.0, true);
-    }
+    // }
 //     last_position = flat_state.position_W;
     geometry_msgs::Point last_position_msg;
     tf::pointEigenToMsg(CurPoint, last_position_msg);
