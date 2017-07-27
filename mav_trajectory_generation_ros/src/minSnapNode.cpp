@@ -171,12 +171,45 @@ bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req
 
   //Calculate solution time
   SolverTime = ros::Time::now() - t0;
-  ROS_INFO("Number of points: %d\tCalculation time so far: %f",
+  ROS_INFO("Number of points: %d\tTime to get time_vector: %f",
             n_w, SolverTime.toSec());
 
   //Get solution for minimum snap problem
   mav_trajectory_generation::Trajectory trajectory;
-  cost = solveMinSnap(vertices, segment_times, dimension, &trajectory);
+  // cost = solveMinSnap(vertices, segment_times, dimension, &trajectory);
+
+  //Convert segment times to the appropriate type
+  std::vector<double> stdSegment_times;
+  eigenVectorXd2stdVector(segment_times, &stdSegment_times);
+
+//Calculate solution time
+  SolverTime = ros::Time::now() - t0;
+  ROS_INFO("Number of points: %d\tTime to get segment times: %f",
+            n_w, SolverTime.toSec());
+
+  //Solve optimization problem
+  const int N = 10;
+  mav_trajectory_generation::PolynomialOptimization<N> opt(dimension);
+  opt.setupFromVertices(vertices, stdSegment_times, derivative_to_optimize);
+ //Calculate solution time
+  SolverTime = ros::Time::now() - t0;
+  ROS_INFO("Number of points: %d\tTime to get setup: %f",
+            n_w, SolverTime.toSec());
+
+  opt.solveLinear();
+//Calculate solution time
+  SolverTime = ros::Time::now() - t0;
+  ROS_INFO("Number of points: %d\tTime to solve optimization: %f",
+            n_w, SolverTime.toSec());
+  //Get segments
+  mav_trajectory_generation::Segment::Vector segments;
+  opt.getSegments(&segments);
+
+  //Get trajectory
+  // mav_trajectory_generation::Trajectory trajectory;
+  opt.getTrajectory(&trajectory);
+
+  cost = opt.computeCost();
 
   //Calculate solution time
   SolverTime = ros::Time::now() - t0;
