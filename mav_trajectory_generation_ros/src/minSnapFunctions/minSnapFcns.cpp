@@ -103,7 +103,7 @@ double solveMinSnapGradDescent(
   const int m = segment_times.size();
   const double h = 0.00001;     //Small step for time gradient
   const double epsilon = 0.05;  //Condition for terminating gradient descent
-  double step = 2*epsilon;
+  double step = std::numeric_limits<float>::infinity();
   double costNew;
   Eigen::VectorXd g = (-1.0/(m-1.0))*Eigen::MatrixXd::Ones(m,1);
   Eigen::VectorXd gradF = Eigen::MatrixXd::Zero(m,1);

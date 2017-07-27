@@ -7,9 +7,7 @@ Panels:
         - /Global Options1
         - /Status1
         - /MarkerArray1
-        - /MarkerArray1/Namespaces1
         - /Marker1
-        - /Marker1/Namespaces1
       Splitter Ratio: 0.472222209
     Tree Height: 1107
   - Class: rviz/Selection
@@ -95,7 +93,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 14.1101246
+      Distance: 13.5957413
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.0599999987
         Stereo Focal Distance: 1
@@ -109,10 +107,10 @@ Visualization Manager:
       Focal Shape Size: 0.0500000007
       Name: Current View
       Near Clip Distance: 0.00999999978
-      Pitch: 1.52479637
+      Pitch: 1.0347966
       Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
-      Yaw: 3.30675912
+      Yaw: 3.22991586
     Saved: ~
 Window Geometry:
   Displays:
