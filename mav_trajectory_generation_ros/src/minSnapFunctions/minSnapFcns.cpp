@@ -89,7 +89,7 @@ double solveMinSnap(
 double solveMinSnapGradDescent(
   const mav_trajectory_generation::Vertex::Vector vertices,
   const int dimension, 
-  Eigen::VectorXd segment_times,
+  Eigen::VectorXd &segment_times,
   mav_trajectory_generation::Trajectory *trajectory){
 
   //Get initial solution for minimum snap problem

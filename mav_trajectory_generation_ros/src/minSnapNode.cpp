@@ -136,6 +136,11 @@ bool minSnapOptTimeService(mav_trajectory_generation_ros::minSnapStamped::Reques
   //Output
   res.flatStates = flatStates;
 
+  std_msgs::Float32 dt_wp;
+  for (int i = 0; i < n_w-1; i++){
+    dt_wp.data = segment_times(i);
+    res.dt_out.push_back(dt_wp);
+  }
 
   return true;
 }

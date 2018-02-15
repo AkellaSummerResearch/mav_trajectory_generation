@@ -68,7 +68,7 @@ int main(int argc, char **argv)
     }
 
     srv.request.Waypoints = Waypoints;
-    if (client0.call(srv))
+    if (client2.call(srv))
     {
       ROS_INFO("Service returned succesfully! Publishing Markers...");
       
@@ -80,6 +80,7 @@ int main(int argc, char **argv)
       mav_trajectory_generation::drawWaypoints(Waypoints, frame_id, &WaypointMarkers);
       mav_trajectory_generation::drawMavSampledTrajectory(states, distance, frame_id, &TrajMarkers);
       // mav_trajectory_generation::drawTrajectoryFromWaypoints(Path_out, frame_id, &TrajMarkers);
+      std::cout << srv.response.dt_out[1].data << std::endl;
 
       // //Delete current markers
       pathMarker_pub.publish(deleteMarkers);
