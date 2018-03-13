@@ -88,6 +88,7 @@ bool minSnapNloptService(mav_trajectory_generation_ros::minSnapStamped::Request 
 
   //Output
   res.flatStates = flatStates;
+  res.cost.data = cost;
   
   return true;
 }
@@ -135,6 +136,7 @@ bool minSnapOptTimeService(mav_trajectory_generation_ros::minSnapStamped::Reques
 
   //Output
   res.flatStates = flatStates;
+  res.cost.data = cost;
 
   std_msgs::Float32 dt_wp;
   for (int i = 0; i < n_w-1; i++){
@@ -174,47 +176,10 @@ bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req
     segment_times(i-1) = diff_time;
   }
 
-  //Calculate solution time
-  // SolverTime = ros::Time::now() - t0;
-  // ROS_INFO("Number of points: %d\tTime to get time_vector: %f",
-  //           n_w, SolverTime.toSec());
-
   //Get solution for minimum snap problem
   mav_trajectory_generation::Trajectory trajectory;
   cost = solveMinSnap(vertices, segment_times, dimension, &trajectory);
 
-//   //Convert segment times to the appropriate type
-//   std::vector<double> stdSegment_times;
-//   eigenVectorXd2stdVector(segment_times, &stdSegment_times);
-
-// //Calculate solution time
-//   // SolverTime = ros::Time::now() - t0;
-//   // ROS_INFO("Number of points: %d\tTime to get segment times: %f",
-//   //           n_w, SolverTime.toSec());
-
-//   //Solve optimization problem
-//   const int N = 10;
-//   mav_trajectory_generation::PolynomialOptimization<N> opt(dimension);
-//   opt.setupFromVertices(vertices, stdSegment_times, derivative_to_optimize);
-//  //Calculate solution time
-//   SolverTime = ros::Time::now() - t0;
-//   ROS_INFO("Number of points: %d\tTime to get setup: %f",
-//             n_w, SolverTime.toSec());
-
-//   opt.solveLinear();
-// //Calculate solution time
-//   SolverTime = ros::Time::now() - SolverTime;
-//   ROS_INFO("Number of points: %d\tTime to solve optimization: %f",
-//             n_w, SolverTime.toSec());
-//   //Get segments
-//   mav_trajectory_generation::Segment::Vector segments;
-//   opt.getSegments(&segments);
-
-//   //Get trajectory
-//   // mav_trajectory_generation::Trajectory trajectory;
-//   opt.getTrajectory(&trajectory);
-
-//   cost = opt.computeCost();
 
   //Calculate solution time
   SolverTime = ros::Time::now() - t0;
@@ -227,6 +192,7 @@ bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req
 
   //Output
   res.flatStates = flatStates;
+  res.cost.data = cost;
 
   return true;
 }
