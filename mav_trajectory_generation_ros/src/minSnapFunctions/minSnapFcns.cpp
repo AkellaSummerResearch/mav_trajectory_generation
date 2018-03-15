@@ -97,7 +97,6 @@ double solveMinSnapGradDescent(
   mav_trajectory_generation::Trajectory curTrajectory;
   cost = solveMinSnap(vertices, segment_times, dimension, &curTrajectory);
 
-
   //Declare variables for gradient descent
   const double FinalTime = curTrajectory.getMaxTime();
   const int m = segment_times.size();
@@ -107,6 +106,7 @@ double solveMinSnapGradDescent(
   double costNew;
   Eigen::VectorXd g = (-1.0/(m-1.0))*Eigen::MatrixXd::Ones(m,1);
   Eigen::VectorXd gradF = Eigen::MatrixXd::Zero(m,1);
+  double init_cost = cost;
 
   //Gradient descent loop
   while(step > epsilon){
@@ -128,7 +128,10 @@ double solveMinSnapGradDescent(
     //Perform gradient descent
     double alpha = 0.9;           //Step size
     double curCost = std::numeric_limits<float>::infinity();
-    for (int j = 0; j < 6; j++){  //Here we only iterate 6 times before alpha becomes too small
+    double prevCost = std::numeric_limits<float>::infinity();
+    Eigen::VectorXd best_segment_times = segment_times;
+    double bestCost = cost;
+    for (int j = 0; j < 15; j++){  //Here we only iterate 6 times before alpha becomes too small
       segment_times_new = segment_times - alpha*gradF;
 
       //Renormalize segment times to preserve final time
@@ -136,18 +139,24 @@ double solveMinSnapGradDescent(
 
       curCost = solveMinSnap(vertices, segment_times_new, dimension, &curTrajectory);
 
-      if(curCost < cost){
-        break;
+      if(curCost > prevCost) {
+          break;
       }
 
-      alpha = alpha*0.5;
+      if(curCost < bestCost){
+        bestCost = curCost;
+        best_segment_times = segment_times_new;
+      }
+
+      alpha = alpha*0.75;
+      prevCost = curCost;
     }
 
     //Check if there was any improvement. Otherwise, stop iterations
-    if(curCost < cost){
-      segment_times = segment_times_new;
-      step = (cost - curCost)/cost;
-      cost = curCost;
+    if(bestCost < cost){
+      segment_times = best_segment_times;
+      step = (cost - bestCost)/cost;
+      cost = bestCost;
       *trajectory = curTrajectory;
     }
     else{
@@ -155,6 +164,7 @@ double solveMinSnapGradDescent(
     }
 
   }
+  ROS_INFO("improvement: %f", (init_cost-cost)/cost);
 
   // std::cout  << segment_times.transpose() << std::endl;
 
