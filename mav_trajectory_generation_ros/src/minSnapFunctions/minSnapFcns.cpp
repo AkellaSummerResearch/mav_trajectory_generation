@@ -131,7 +131,7 @@ double solveMinSnapGradDescent(
     double prevCost = std::numeric_limits<float>::infinity();
     Eigen::VectorXd best_segment_times = segment_times;
     double bestCost = cost;
-    for (int j = 0; j < 15; j++){  //Here we only iterate 6 times before alpha becomes too small
+    for (int j = 0; j < 6; j++){  //Here we only iterate 6 times before alpha becomes too small
       segment_times_new = segment_times - alpha*gradF;
 
       //Renormalize segment times to preserve final time
@@ -139,16 +139,16 @@ double solveMinSnapGradDescent(
 
       curCost = solveMinSnap(vertices, segment_times_new, dimension, &curTrajectory);
 
-      if(curCost > prevCost) {
-          break;
-      }
+      // if(curCost > prevCost) {
+      //     break;
+      // }
 
       if(curCost < bestCost){
         bestCost = curCost;
         best_segment_times = segment_times_new;
       }
 
-      alpha = alpha*0.75;
+      alpha = alpha*0.5;
       prevCost = curCost;
     }
 
