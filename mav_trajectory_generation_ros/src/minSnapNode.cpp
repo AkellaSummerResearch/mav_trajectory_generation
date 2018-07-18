@@ -21,16 +21,15 @@ bool minSnapNloptService(mav_trajectory_generation_ros::minSnapStamped::Request 
 
   //Declare initial variables
   const int n_w = req.Waypoints.poses.size(); //Number of waypoints
-  const int dimension = 3;
+  const int dimension = 3, yaw_dimension = 1;
   const int derivative_to_optimize = mav_trajectory_generation::derivative_order::SNAP;
   const double dt = 0.1; //Output sampling period
-  double cost = 0;
+  double cost = 0, yaw_cost = 0;
 
   //Get waypoints into vertex
-  mav_trajectory_generation::Vertex::Vector vertices;
-  waypoint2vertex_minSnap(req.Waypoints, dimension,
-                          derivative_to_optimize, &vertices);
-
+  mav_trajectory_generation::Vertex::Vector wp_vertices, yaw_vertices;
+  waypoint2vertex_minSnap(req.Waypoints, dimension, &wp_vertices);
+  yaw2vertex_minAcc(req.Waypoints, &yaw_vertices);
 
   //Get segment times from client request
   Eigen::VectorXd segment_times = Eigen::MatrixXd::Zero(n_w-1,1);
@@ -58,7 +57,7 @@ bool minSnapNloptService(mav_trajectory_generation_ros::minSnapStamped::Request 
   const double v_max = 2.0;
   const double a_max = 2.0;
   mav_trajectory_generation::PolynomialOptimizationNonLinear<N> opt(dimension, parameters, true);
-  opt.setupFromVertices(vertices, stdSegment_times, derivative_to_optimize);
+  opt.setupFromVertices(wp_vertices, stdSegment_times, derivative_to_optimize);
   // opt.addMaximumMagnitudeConstraint(mav_trajectory_generation::derivative_order::VELOCITY, v_max);                                
   // opt.addMaximumMagnitudeConstraint(mav_trajectory_generation::derivative_order::ACCELERATION, a_max);
   opt.optimize();
@@ -74,6 +73,12 @@ bool minSnapNloptService(mav_trajectory_generation_ros::minSnapStamped::Request 
   std::vector<double> stdSegment_timesFinal;
   opt.getPolynomialOptimizationRef().getSegmentTimes(&stdSegment_timesFinal);
 
+  // Solve for yaw using the optimal segment times
+  mav_trajectory_generation::Trajectory trajectory_yaw;
+  yaw_cost = solveMinAcceleration(yaw_vertices, stdSegment_timesFinal, yaw_dimension,
+                                  &trajectory_yaw);
+
+
   std::cout << "final time: " << trajectory.getMaxTime() << std::endl;
 
   //Calculate solution time
@@ -84,7 +89,7 @@ bool minSnapNloptService(mav_trajectory_generation_ros::minSnapStamped::Request 
 
   //Sample trajectory
   mav_trajectory_generation_ros::PVAJS_array flatStates;
-  trajectory2waypoint(trajectory, dt, &flatStates);
+  trajectory2waypoint(trajectory, trajectory_yaw, dt, &flatStates);
 
   //Output
   res.flatStates = flatStates;
@@ -101,16 +106,15 @@ bool minSnapOptTimeService(mav_trajectory_generation_ros::minSnapStamped::Reques
 
   // //Declare initial variables
   const int n_w = req.Waypoints.poses.size(); //Number of waypoints
-  const int dimension = 3;
+  const int dimension = 3, yaw_dimension = 1;
   const int derivative_to_optimize = mav_trajectory_generation::derivative_order::SNAP;
   const double dt = 0.01; //Output sampling period
-  double cost;
+  double cost, yaw_cost;
 
   //Get waypoints into vertex
-  mav_trajectory_generation::Vertex::Vector vertices;
-  waypoint2vertex_minSnap(req.Waypoints, dimension,
-                          derivative_to_optimize, &vertices);
-
+  mav_trajectory_generation::Vertex::Vector wp_vertices, yaw_vertices;
+  waypoint2vertex_minSnap(req.Waypoints, dimension, &wp_vertices);
+  yaw2vertex_minAcc(req.Waypoints, &yaw_vertices);
 
   //Get segment times from client request
   Eigen::VectorXd segment_times = Eigen::MatrixXd::Zero(n_w-1,1);
@@ -121,8 +125,12 @@ bool minSnapOptTimeService(mav_trajectory_generation_ros::minSnapStamped::Reques
   }
 
   //Get solution for minimum snap problem with optimal segment times
-  mav_trajectory_generation::Trajectory trajectory;
-  cost = solveMinSnapGradDescent(vertices, dimension, segment_times, &trajectory);
+  mav_trajectory_generation::Trajectory trajectory_wp, trajectory_yaw;
+  Eigen::VectorXd best_segment_times;
+  cost = solveMinSnapGradDescent(wp_vertices, dimension, segment_times,
+                                 &trajectory_wp, &best_segment_times);
+  yaw_cost = solveMinAcceleration(yaw_vertices, best_segment_times, yaw_dimension,
+                                  &trajectory_yaw);
 
   //Calculate solution time
   ros::Duration SolverTime = ros::Time::now() - t0;
@@ -132,7 +140,7 @@ bool minSnapOptTimeService(mav_trajectory_generation_ros::minSnapStamped::Reques
 
   //Sample trajectory
   mav_trajectory_generation_ros::PVAJS_array flatStates;
-  trajectory2waypoint(trajectory, dt, &flatStates);
+  trajectory2waypoint(trajectory_wp, trajectory_yaw, dt, &flatStates);
 
   //Output
   res.flatStates = flatStates;
@@ -157,16 +165,15 @@ bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req
 
   // //Declare initial variables
   const int n_w = req.Waypoints.poses.size(); //Number of waypoints
-  const int dimension = 3;
+  const int dimension = 3, yaw_dimension = 1;
   const int derivative_to_optimize = mav_trajectory_generation::derivative_order::SNAP;
   const double dt = 0.01; //Output sampling period
-  double cost;
+  double cost, yaw_cost;
 
   //Get waypoints into vertex
-  mav_trajectory_generation::Vertex::Vector vertices;
-  waypoint2vertex_minSnap(req.Waypoints, dimension,
-                          derivative_to_optimize, &vertices);
-
+  mav_trajectory_generation::Vertex::Vector wp_vertices, yaw_vertices;
+  waypoint2vertex_minSnap(req.Waypoints, dimension, &wp_vertices);
+  yaw2vertex_minAcc(req.Waypoints, &yaw_vertices);
 
   //Get segment times from client request
   Eigen::VectorXd segment_times = Eigen::MatrixXd::Zero(n_w-1,1);
@@ -177,9 +184,10 @@ bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req
   }
 
   //Get solution for minimum snap problem
-  mav_trajectory_generation::Trajectory trajectory;
-  cost = solveMinSnap(vertices, segment_times, dimension, &trajectory);
-
+  mav_trajectory_generation::Trajectory trajectory_wp, trajectory_yaw;
+  cost = solveMinSnap(wp_vertices, segment_times, dimension, &trajectory_wp);
+  yaw_cost = solveMinAcceleration(yaw_vertices, segment_times, yaw_dimension,
+                                  &trajectory_yaw);
 
   //Calculate solution time
   SolverTime = ros::Time::now() - t0;
@@ -188,7 +196,7 @@ bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req
 
   //Sample trajectory
   mav_trajectory_generation_ros::PVAJS_array flatStates;
-  trajectory2waypoint(trajectory, dt, &flatStates);
+  trajectory2waypoint(trajectory_wp, trajectory_yaw, dt, &flatStates);
 
   //Output
   res.flatStates = flatStates;

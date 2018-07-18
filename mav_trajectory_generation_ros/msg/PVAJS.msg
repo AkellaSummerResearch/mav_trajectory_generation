@@ -3,4 +3,7 @@ geometry_msgs/Vector3 Vel
 geometry_msgs/Vector3 Acc
 geometry_msgs/Vector3 Jerk
 geometry_msgs/Vector3 Snap
+float32 yaw
+float32 yaw_dot
+float32 yaw_ddot
 float32 time
