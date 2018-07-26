@@ -227,6 +227,7 @@ double solveMinSnapGradDescent(
   Eigen::VectorXd gradF = Eigen::MatrixXd::Zero(m,1);
   double init_cost = cost;
   Eigen::VectorXd best_segment_times;
+  *trajectory = curTrajectory;
 
   //Gradient descent loop
   while(step > epsilon){
