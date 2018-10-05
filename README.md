@@ -49,7 +49,18 @@ sudo apt-get install python-wstool python-catkin-tools ros-indigo-cmake-modules
 sudo apt-get install libsuitesparse-dev
 ```
 
-2. Set up a catkin workspace (if not already done):
+2. Install g20:
+
+```
+cd ~
+git clone https://github.com/RainerKuemmerle/g2o
+mkdir g2o/build
+cd build
+cmake ../
+make
+```
+
+3. Set up a catkin workspace (if not already done):
 
 ```
 mkdir -p ~/catkin_ws/src
@@ -60,7 +71,7 @@ catkin config --cmake-args -DCMAKE_BUILD_TYPE=Release
 catkin config --merge-devel
 ```
 
-3. Install the repository and its dependencies  (the original branch had a catkin build that wasn't working. I install everything by building the necessary repos one by one):
+4. Install the repository and its dependencies  (the original branch had a catkin build that wasn't working. I install everything by building the necessary repos one by one):
 
 ```
 cd ~/catkin_ws/src
