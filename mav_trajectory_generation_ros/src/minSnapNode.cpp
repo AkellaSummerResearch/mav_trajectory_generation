@@ -6,16 +6,15 @@
 #include "HelperFunctions/helper.h"
 #include "HelperFunctions/QuatRotEuler.h"
 #include "minSnapFunctions/minSnapFcns.h"
-#include "mav_trajectory_generation_ros/PVAJS.h"
-#include "mav_trajectory_generation_ros/PVAJS_array.h"
 #include <mav_trajectory_generation/polynomial_optimization_nonlinear.h>
-
+#include <mav_trajectory_generation_ros/structs.h>
 
 #include <sstream>
+#include <thread>
+
 
 bool minSnapNloptService(mav_trajectory_generation_ros::minSnapStamped::Request  &req,
-                           mav_trajectory_generation_ros::minSnapStamped::Response &res)
-{
+                           mav_trajectory_generation_ros::minSnapStamped::Response &res) {
   //Get initial time to calculate solving time
   ros::Time t0 = ros::Time::now();
 
@@ -23,8 +22,17 @@ bool minSnapNloptService(mav_trajectory_generation_ros::minSnapStamped::Request 
   const int n_w = req.Waypoints.poses.size(); //Number of waypoints
   const int dimension = 3, yaw_dimension = 1;
   const int derivative_to_optimize = mav_trajectory_generation::derivative_order::SNAP;
-  const double dt = 0.1; //Output sampling period
+  double dt = req.dt_flat_states.data; //Output sampling period
   double cost = 0, yaw_cost = 0;
+
+  if (n_w < 2) {
+    ROS_WARN("[min_snap_node] Not enough waypoints! Canceling service...");
+    return false;
+  }
+  if (dt <= 0) {
+    ROS_WARN("[min_snap_node] Sampling time not well defined. Setting sampling time to dt=0.01s");
+    dt = 0.01;
+  }
 
   //Get waypoints into vertex
   mav_trajectory_generation::Vertex::Vector wp_vertices, yaw_vertices;
@@ -91,6 +99,11 @@ bool minSnapNloptService(mav_trajectory_generation_ros::minSnapStamped::Request 
   mav_trajectory_generation_ros::PVAJS_array flatStates;
   trajectory2waypoint(trajectory, trajectory_yaw, dt, &flatStates);
 
+  // Add to list for Rviz publishing
+  m_wp_traj_list.lock();
+    wp_traj_list.push(waypoint_and_trajectory(req.Waypoints, flatStates));
+  m_wp_traj_list.unlock();
+
   //Output
   res.flatStates = flatStates;
   res.cost.data = cost;
@@ -99,8 +112,7 @@ bool minSnapNloptService(mav_trajectory_generation_ros::minSnapStamped::Request 
 }
 
 bool minSnapOptTimeService(mav_trajectory_generation_ros::minSnapStamped::Request  &req,
-                           mav_trajectory_generation_ros::minSnapStamped::Response &res)
-{
+                           mav_trajectory_generation_ros::minSnapStamped::Response &res) {
   //Get initial time to calculate solving time
   ros::Time t0 = ros::Time::now();
 
@@ -108,8 +120,17 @@ bool minSnapOptTimeService(mav_trajectory_generation_ros::minSnapStamped::Reques
   const int n_w = req.Waypoints.poses.size(); //Number of waypoints
   const int dimension = 3, yaw_dimension = 1;
   const int derivative_to_optimize = mav_trajectory_generation::derivative_order::SNAP;
-  const double dt = 0.01; //Output sampling period
+  double dt = req.dt_flat_states.data; //Output sampling period
   double cost, yaw_cost;
+
+  if (n_w < 2) {
+    ROS_WARN("[min_snap_node] Not enough waypoints! Canceling service...");
+    return false;
+  }
+  if (dt <= 0) {
+    ROS_WARN("[min_snap_node] Sampling time not well defined. Setting sampling time to dt=0.01s");
+    dt = 0.01;
+  }
 
   //Get waypoints into vertex
   mav_trajectory_generation::Vertex::Vector wp_vertices, yaw_vertices;
@@ -142,6 +163,11 @@ bool minSnapOptTimeService(mav_trajectory_generation_ros::minSnapStamped::Reques
   mav_trajectory_generation_ros::PVAJS_array flatStates;
   trajectory2waypoint(trajectory_wp, trajectory_yaw, dt, &flatStates);
 
+  // Add to list for Rviz publishing
+  m_wp_traj_list.lock();
+    wp_traj_list.push(waypoint_and_trajectory(req.Waypoints, flatStates));
+  m_wp_traj_list.unlock();
+
   //Output
   res.flatStates = flatStates;
   res.cost.data = cost;
@@ -156,9 +182,7 @@ bool minSnapOptTimeService(mav_trajectory_generation_ros::minSnapStamped::Reques
 }
 
 bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req,
-                    mav_trajectory_generation_ros::minSnapStamped::Response &res)
-{
-
+                    mav_trajectory_generation_ros::minSnapStamped::Response &res) {
   //Get initial time to calculate solving time
   ros::Time t0 = ros::Time::now();
   ros::Duration SolverTime;
@@ -167,8 +191,17 @@ bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req
   const int n_w = req.Waypoints.poses.size(); //Number of waypoints
   const int dimension = 3, yaw_dimension = 1;
   const int derivative_to_optimize = mav_trajectory_generation::derivative_order::SNAP;
-  const double dt = 0.01; //Output sampling period
+  double dt = req.dt_flat_states.data; //Output sampling period
   double cost, yaw_cost;
+
+  if (n_w < 2) {
+    ROS_WARN("[min_snap_node] Not enough waypoints! Canceling service...");
+    return false;
+  }
+  if (dt <= 0) {
+    ROS_WARN("[min_snap_node] Sampling time not well defined. Setting sampling time to dt=0.01s");
+    dt = 0.01;
+  }
 
   //Get waypoints into vertex
   mav_trajectory_generation::Vertex::Vector wp_vertices, yaw_vertices;
@@ -191,18 +224,56 @@ bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req
 
   //Calculate solution time
   SolverTime = ros::Time::now() - t0;
-  ROS_INFO("Number of points: %d\tCalculation time: %f\tCost: %f",
+  ROS_INFO("[min_snap_node] Number of points: %d\tCalculation time: %f\tCost: %f",
             n_w, SolverTime.toSec(), cost);
 
   //Sample trajectory
   mav_trajectory_generation_ros::PVAJS_array flatStates;
   trajectory2waypoint(trajectory_wp, trajectory_yaw, dt, &flatStates);
-
+  // Add to list for Rviz publishing
+  m_wp_traj_list.lock();
+    wp_traj_list.push(waypoint_and_trajectory(req.Waypoints, flatStates));
+  m_wp_traj_list.unlock();
   //Output
   res.flatStates = flatStates;
   res.cost.data = cost;
 
   return true;
+}
+
+void RvizPubThread(ros::Publisher *pathMarker_pub, ros::Publisher *wpMarker_pub) {
+  ROS_INFO("[min_snap_node] Rviz publisher thread has started!");
+  ros::Rate loop_rate(0.5);
+
+  waypoint_and_trajectory wp_and_traj;
+  bool new_traj = false;
+  double distance = 0.5;
+  std::string frame_id = "map";
+  mav_msgs::EigenTrajectoryPoint::Vector states;
+  visualization_msgs::MarkerArray TrajMarkers, WaypointMarkers;
+
+  while (ros::ok()) {
+    m_wp_traj_list.lock();
+      if(!wp_traj_list.empty()) {
+        wp_and_traj = wp_traj_list.front();
+        wp_traj_list.pop();
+        new_traj = true;
+      }
+    m_wp_traj_list.unlock();
+
+    // If new trajectory, create Rviz markers
+    if (new_traj) {
+      mav_trajectory_generation::PVAJS_array2EigenTrajectoryPoint(wp_and_traj.flatStates_, &states);
+      mav_trajectory_generation::drawWaypoints(wp_and_traj.Waypoints_, frame_id, &WaypointMarkers);
+      mav_trajectory_generation::drawMavSampledTrajectory(states, distance, frame_id, &TrajMarkers);
+    }
+
+    //Publish current markers
+    pathMarker_pub->publish(TrajMarkers);
+    wpMarker_pub->publish(WaypointMarkers);
+
+    loop_rate.sleep();
+  }
 }
 
 /**
@@ -225,13 +296,20 @@ int main(int argc, char **argv)
   //ROS initialization
   ros::NodeHandle n;
 
-  //Publishers
-  ros::Publisher Waypoint_pub = n.advertise<nav_msgs::Path>("Waypoints", 1000);
+  // Rviz marker publishers
+  ros::Publisher pathMarker_pub = n.advertise<visualization_msgs::MarkerArray>
+                                    ("path_visualization_markers", 1000);
+  ros::Publisher wpMarker_pub = n.advertise<visualization_msgs::MarkerArray>
+                                    ("waypoint_visualization_markers", 1000);
+
+  // Thread for publishing incoming waypoints and outcoming trajectories into RVIz
+  std::thread h_trajPub_thread_;
+  h_trajPub_thread_ = std::thread(RvizPubThread, &pathMarker_pub, &wpMarker_pub);
 
   //Services
-  ros::ServiceServer minSnap_Srv = n.advertiseService("/minSnap", minSnapService);
-  ros::ServiceServer minSnap_Srv2 = n.advertiseService("/minSnapOptTime", minSnapOptTimeService);
-  ros::ServiceServer minSnap_Srv3 = n.advertiseService("/minSnapNlopt", minSnapNloptService);
+  ros::ServiceServer minSnap_Srv = n.advertiseService("minSnap", minSnapService);
+  ros::ServiceServer minSnap_Srv2 = n.advertiseService("minSnapOptTime", minSnapOptTimeService);
+  ros::ServiceServer minSnap_Srv3 = n.advertiseService("minSnapNlopt", minSnapNloptService);
 
   ros::Rate loop_rate(50);
 

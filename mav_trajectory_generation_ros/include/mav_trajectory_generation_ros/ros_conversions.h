@@ -21,8 +21,8 @@
 #ifndef MAV_TRAJECTORY_GENERATION_ROS_ROS_CONVERSIONS_H_
 #define MAV_TRAJECTORY_GENERATION_ROS_ROS_CONVERSIONS_H_
 
-#include <planning_msgs/PolynomialTrajectory4D.h>
-#include <planning_msgs/conversions.h>
+#include <mav_planning_msgs/PolynomialTrajectory4D.h>
+#include <mav_planning_msgs/conversions.h>
 #include <mav_trajectory_generation_ros/trajectory_sampling.h>
 #include "mav_trajectory_generation_ros/PVAJS.h"
 #include "mav_trajectory_generation_ros/PVAJS_array.h"
@@ -35,11 +35,11 @@ namespace mav_trajectory_generation {
 
 // Converts a trajectory into a ROS polynomial trajectory msg.
 bool trajectoryToPolynomialTrajectoryMsg(
-    const Trajectory& trajectory, planning_msgs::PolynomialTrajectory4D* msg);
+    const Trajectory& trajectory, mav_planning_msgs::PolynomialTrajectory4D* msg);
 
 // Converts a ROS polynomial trajectory msg into a Trajectory.
 bool polynomialTrajectoryMsgToTrajectory(
-    const planning_msgs::PolynomialTrajectory4D& msg, Trajectory* trajectory);
+    const mav_planning_msgs::PolynomialTrajectory4D& msg, Trajectory* trajectory);
 
 // Converts a set of Flat States into PVAJS_array.
 bool EigenTrajectoryPoint2PVAJS_array(

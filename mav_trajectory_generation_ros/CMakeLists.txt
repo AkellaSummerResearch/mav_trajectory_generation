@@ -79,6 +79,7 @@ add_executable(minSnap_Node src/minSnapNode.cpp
                             src/HelperFunctions/helper.cpp
                             src/HelperFunctions/QuatRotEuler.cpp)
 add_dependencies(minSnap_Node mav_trajectory_generation_ros_generate_messages_cpp)
+add_dependencies(minSnap_Node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(minSnap_Node ${catkin_LIBRARIES} ${CHOLMOD_LIBRARIES} ${SPQR_LIBRARIES})
 
 add_executable(client_Node src/minSnapClient.cpp
@@ -88,6 +89,7 @@ add_executable(client_Node src/minSnapClient.cpp
                            src/HelperFunctions/helper.cpp
                            src/HelperFunctions/QuatRotEuler.cpp)
 add_dependencies(client_Node mav_trajectory_generation_ros_generate_messages_cpp)
+add_dependencies(client_Node ${catkin_EXPORTED_TARGETS})
 target_link_libraries(client_Node ${catkin_LIBRARIES} ${CHOLMOD_LIBRARIES} ${SPQR_LIBRARIES})
 
 
