@@ -1,6 +1,6 @@
 nav_msgs/Path Waypoints
 std_msgs/Float32 dt_flat_states
 ---
-mav_trajectory_generation_ros/PVAJS_array flatStates
+mg_msgs/PVAJS_array flatStates
 std_msgs/Float32[] dt_out
 std_msgs/Float32 cost

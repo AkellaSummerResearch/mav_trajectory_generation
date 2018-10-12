@@ -17,6 +17,8 @@ find_package(catkin_simple REQUIRED COMPONENTS
   roscpp
   std_msgs
   genmsg
+  mav_planning_msgs
+  mg_msgs
 )
 
 find_package(Cholmod REQUIRED)
@@ -44,23 +46,18 @@ cs_add_library(${PROJECT_NAME}
   src/trajectory_sampling.cpp
 )
 
-#Create message types
-add_message_files(DIRECTORY msg FILES
-   PVAJS.msg
-   PVAJS_array.msg
- )
-
- #Create service types
-add_service_files( FILES
-  minSnapStamped.srv
-)
+#  #Create service types
+# add_service_files( FILES
+#   minSnapStamped.srv
+# )
 
 
-generate_messages( DEPENDENCIES
-  nav_msgs
-  std_msgs
-  geometry_msgs
-)
+# generate_messages( DEPENDENCIES
+#   mg_msgs
+#   nav_msgs
+#   std_msgs
+#   geometry_msgs
+# )
 
 ############
 # BINARIES #
@@ -80,6 +77,7 @@ add_executable(minSnap_Node src/minSnapNode.cpp
                             src/HelperFunctions/QuatRotEuler.cpp)
 add_dependencies(minSnap_Node mav_trajectory_generation_ros_generate_messages_cpp)
 add_dependencies(minSnap_Node ${catkin_EXPORTED_TARGETS})
+add_dependencies(minSnap_Node mg_msgs_gencpp)
 target_link_libraries(minSnap_Node ${catkin_LIBRARIES} ${CHOLMOD_LIBRARIES} ${SPQR_LIBRARIES})
 
 add_executable(client_Node src/minSnapClient.cpp
@@ -90,6 +88,7 @@ add_executable(client_Node src/minSnapClient.cpp
                            src/HelperFunctions/QuatRotEuler.cpp)
 add_dependencies(client_Node mav_trajectory_generation_ros_generate_messages_cpp)
 add_dependencies(client_Node ${catkin_EXPORTED_TARGETS})
+add_dependencies(client_Node mg_msgs_gencpp)
 target_link_libraries(client_Node ${catkin_LIBRARIES} ${CHOLMOD_LIBRARIES} ${SPQR_LIBRARIES})
 
 

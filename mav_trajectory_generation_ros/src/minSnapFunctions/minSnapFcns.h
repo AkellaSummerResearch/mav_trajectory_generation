@@ -6,8 +6,8 @@
 #include "../HelperFunctions/QuatRotEuler.h"
 #include "../HelperFunctions/helper.h"
 #include "nav_msgs/Path.h"
-#include "mav_trajectory_generation_ros/PVAJS.h"
-#include "mav_trajectory_generation_ros/PVAJS_array.h"
+#include "mg_msgs/PVAJS.h"
+#include "mg_msgs/PVAJS_array.h"
 
 void waypoint2vertex_minSnap(const nav_msgs::Path &Waypoints,
 	const int &dimension,
@@ -19,18 +19,18 @@ void yaw2vertex_minAcc(const nav_msgs::Path &Waypoints,
 void trajectory2waypoint(
   const mav_trajectory_generation::Trajectory &wp_trajectory,
   const double &dt,
-  mav_trajectory_generation_ros::PVAJS_array *flatStates);
+  mg_msgs::PVAJS_array *flatStates);
 
 void trajectory2waypoint(
   const mav_trajectory_generation::Trajectory &wp_trajectory,
   const mav_trajectory_generation::Trajectory &yaw_trajectory,
   const double &dt,
-  mav_trajectory_generation_ros::PVAJS_array *flatStates);
+  mg_msgs::PVAJS_array *flatStates);
 
 void yawTrajectory2waypoint(
   const mav_trajectory_generation::Trajectory &yaw_trajectory,
   const double &dt,
-  mav_trajectory_generation_ros::PVAJS_array *flatStates);
+  mg_msgs::PVAJS_array *flatStates);
 
 //Compute minimum snap trajectory and return minSnap cost
 double solveMinSnap(

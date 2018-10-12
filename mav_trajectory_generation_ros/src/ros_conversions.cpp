@@ -93,9 +93,9 @@ bool polynomialTrajectoryMsgToTrajectory(
 
 bool EigenTrajectoryPoint2PVAJS_array(
   const mav_msgs::EigenTrajectoryPoint::Vector states,
-    mav_trajectory_generation_ros::PVAJS_array *flatStates){
+    mg_msgs::PVAJS_array *flatStates){
 
-  mav_trajectory_generation_ros::PVAJS flatState;
+  mg_msgs::PVAJS flatState;
   flatStates->PVAJS_array.resize(states.size());
   for (int i = 0; i < states.size(); i++){
     flatState.Pos = Eigen2Point(states[i].position_W);
@@ -111,7 +111,7 @@ bool EigenTrajectoryPoint2PVAJS_array(
 }
 
 bool PVAJS_array2EigenTrajectoryPoint(
-    const mav_trajectory_generation_ros::PVAJS_array flatStates,
+    const mg_msgs::PVAJS_array flatStates,
     mav_msgs::EigenTrajectoryPoint::Vector *states){
     
 

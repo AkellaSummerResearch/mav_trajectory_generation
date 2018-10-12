@@ -17,6 +17,9 @@
   <buildtool_depend>catkin</buildtool_depend>
   <buildtool_depend>catkin_simple</buildtool_depend>
   <buildtool_depend>message_generation</buildtool_depend>
+  <buildtool_depend>mav_planning_msgs</buildtool_depend>
+  <buildtool_depend>mg_msgs</buildtool_depend>
+  <buildtool_depend>nav_msgs</buildtool_depend>
 
   <depend>eigen_catkin</depend>
   <depend>mav_msgs</depend>
@@ -24,8 +27,7 @@
   <depend>mav_visualization</depend>
   <depend>mav_planning_msgs</depend>
   <depend>eigen_checks</depend>
-
-  <buildtool_depend>nav_msgs</buildtool_depend>
+  <depend>mg_msgs</depend>
   <depend>nav_msgs</depend>
 
 </package>

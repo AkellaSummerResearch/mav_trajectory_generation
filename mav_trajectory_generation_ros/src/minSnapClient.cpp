@@ -1,12 +1,12 @@
 #include "ros/ros.h"
 #include "HelperFunctions/helper.h"
 #include "HelperFunctions/QuatRotEuler.h"
-#include "mav_trajectory_generation_ros/minSnapStamped.h"
 #include "visualization_msgs/MarkerArray.h"
 #include "visualization_msgs/Marker.h"
 #include <mav_trajectory_generation_ros/ros_visualization.h>
 #include <mav_trajectory_generation_ros/ros_conversions.h>
-#include "mav_trajectory_generation_ros/PVAJS_array.h"
+#include "mg_msgs/PVAJS_array.h"
+#include "mg_msgs/minSnapStamped.h"
 
 
 /**
@@ -40,10 +40,10 @@ int main(int argc, char **argv)
   mav_trajectory_generation::deleteMarkersTemplate(frame_id, &deleteMarkers);
 
   //Service client
-  ros::ServiceClient client0 = n.serviceClient<mav_trajectory_generation_ros::minSnapStamped>("/minSnap");
-  ros::ServiceClient client1 = n.serviceClient<mav_trajectory_generation_ros::minSnapStamped>("/minSnapNlopt");
-  ros::ServiceClient client2 = n.serviceClient<mav_trajectory_generation_ros::minSnapStamped>("/minSnapOptTime");
-  mav_trajectory_generation_ros::minSnapStamped srv;
+  ros::ServiceClient client0 = n.serviceClient<mg_msgs::minSnapStamped>("/minSnap");
+  ros::ServiceClient client1 = n.serviceClient<mg_msgs::minSnapStamped>("/minSnapNlopt");
+  ros::ServiceClient client2 = n.serviceClient<mg_msgs::minSnapStamped>("/minSnapOptTime");
+  mg_msgs::minSnapStamped srv;
 
   //Populate waypoints
   geometry_msgs::PoseStamped Pos;
@@ -76,7 +76,7 @@ int main(int argc, char **argv)
       int distance = 1.0;
       mav_msgs::EigenTrajectoryPoint::Vector states;
       mav_trajectory_generation::PVAJS_array2EigenTrajectoryPoint(srv.response.flatStates, &states);
-      mav_trajectory_generation_ros::PVAJS_array flatStates = srv.response.flatStates;
+      mg_msgs::PVAJS_array flatStates = srv.response.flatStates;
       mav_trajectory_generation::drawWaypoints(Waypoints, frame_id, &WaypointMarkers);
       mav_trajectory_generation::drawMavSampledTrajectory(states, distance, frame_id, &TrajMarkers);
       // mav_trajectory_generation::drawTrajectoryFromWaypoints(Path_out, frame_id, &TrajMarkers);

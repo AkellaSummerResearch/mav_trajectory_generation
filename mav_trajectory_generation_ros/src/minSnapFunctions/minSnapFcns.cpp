@@ -69,7 +69,7 @@ void yaw2vertex_minAcc(const nav_msgs::Path &Waypoints,
 void trajectory2waypoint(
   const mav_trajectory_generation::Trajectory &wp_trajectory,
   const double &dt,
-  mav_trajectory_generation_ros::PVAJS_array *flatStates){
+  mg_msgs::PVAJS_array *flatStates){
 
   //Get whole trajectory
   mav_msgs::EigenTrajectoryPoint::Vector states;
@@ -81,7 +81,7 @@ void trajectory2waypoint(
 
   //Populate waypoints to send back
   geometry_msgs::PoseStamped Pos;
-  mav_trajectory_generation_ros::PVAJS flatState;
+  mg_msgs::PVAJS flatState;
 
   mav_trajectory_generation::EigenTrajectoryPoint2PVAJS_array(states, flatStates);
 }
@@ -90,7 +90,7 @@ void trajectory2waypoint(
 	const mav_trajectory_generation::Trajectory &wp_trajectory,
   const mav_trajectory_generation::Trajectory &yaw_trajectory,
 	const double &dt,
-  mav_trajectory_generation_ros::PVAJS_array *flatStates){
+  mg_msgs::PVAJS_array *flatStates){
 
   //Get whole trajectory
   mav_msgs::EigenTrajectoryPoint::Vector states;
@@ -102,7 +102,7 @@ void trajectory2waypoint(
 
   //Populate waypoints to send back
   geometry_msgs::PoseStamped Pos;
-  mav_trajectory_generation_ros::PVAJS flatState;
+  mg_msgs::PVAJS flatState;
 
   mav_trajectory_generation::EigenTrajectoryPoint2PVAJS_array(states, flatStates);
 
@@ -113,7 +113,7 @@ void trajectory2waypoint(
 void yawTrajectory2waypoint(
   const mav_trajectory_generation::Trajectory &yaw_trajectory,
   const double &dt,
-  mav_trajectory_generation_ros::PVAJS_array *flatStates) {
+  mg_msgs::PVAJS_array *flatStates) {
   int yaw_pos = mav_trajectory_generation::derivative_order::POSITION;
   int yaw_vel = mav_trajectory_generation::derivative_order::VELOCITY;
   int yaw_acc = mav_trajectory_generation::derivative_order::ACCELERATION;

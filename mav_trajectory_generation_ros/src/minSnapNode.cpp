@@ -1,20 +1,20 @@
 #include "ros/ros.h"
 #include "nav_msgs/Path.h"
 #include <mav_trajectory_generation/polynomial_optimization_linear.h>
-#include "mav_trajectory_generation_ros/minSnapStamped.h"
 #include <mav_trajectory_generation_ros/ros_visualization.h>
 #include "HelperFunctions/helper.h"
 #include "HelperFunctions/QuatRotEuler.h"
 #include "minSnapFunctions/minSnapFcns.h"
 #include <mav_trajectory_generation/polynomial_optimization_nonlinear.h>
 #include <mav_trajectory_generation_ros/structs.h>
+#include "mg_msgs/minSnapStamped.h"
 
 #include <sstream>
 #include <thread>
 
 
-bool minSnapNloptService(mav_trajectory_generation_ros::minSnapStamped::Request  &req,
-                           mav_trajectory_generation_ros::minSnapStamped::Response &res) {
+bool minSnapNloptService(mg_msgs::minSnapStamped::Request  &req,
+                         mg_msgs::minSnapStamped::Response &res) {
   //Get initial time to calculate solving time
   ros::Time t0 = ros::Time::now();
 
@@ -96,7 +96,7 @@ bool minSnapNloptService(mav_trajectory_generation_ros::minSnapStamped::Request 
 
 
   //Sample trajectory
-  mav_trajectory_generation_ros::PVAJS_array flatStates;
+  mg_msgs::PVAJS_array flatStates;
   trajectory2waypoint(trajectory, trajectory_yaw, dt, &flatStates);
 
   // Add to list for Rviz publishing
@@ -111,8 +111,8 @@ bool minSnapNloptService(mav_trajectory_generation_ros::minSnapStamped::Request 
   return true;
 }
 
-bool minSnapOptTimeService(mav_trajectory_generation_ros::minSnapStamped::Request  &req,
-                           mav_trajectory_generation_ros::minSnapStamped::Response &res) {
+bool minSnapOptTimeService(mg_msgs::minSnapStamped::Request  &req,
+                           mg_msgs::minSnapStamped::Response &res) {
   //Get initial time to calculate solving time
   ros::Time t0 = ros::Time::now();
 
@@ -160,7 +160,7 @@ bool minSnapOptTimeService(mav_trajectory_generation_ros::minSnapStamped::Reques
 
 
   //Sample trajectory
-  mav_trajectory_generation_ros::PVAJS_array flatStates;
+  mg_msgs::PVAJS_array flatStates;
   trajectory2waypoint(trajectory_wp, trajectory_yaw, dt, &flatStates);
 
   // Add to list for Rviz publishing
@@ -181,8 +181,8 @@ bool minSnapOptTimeService(mav_trajectory_generation_ros::minSnapStamped::Reques
   return true;
 }
 
-bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req,
-                    mav_trajectory_generation_ros::minSnapStamped::Response &res) {
+bool minSnapService(mg_msgs::minSnapStamped::Request  &req,
+                    mg_msgs::minSnapStamped::Response &res) {
   //Get initial time to calculate solving time
   ros::Time t0 = ros::Time::now();
   ros::Duration SolverTime;
@@ -228,7 +228,7 @@ bool minSnapService(mav_trajectory_generation_ros::minSnapStamped::Request  &req
             n_w, SolverTime.toSec(), cost);
 
   //Sample trajectory
-  mav_trajectory_generation_ros::PVAJS_array flatStates;
+  mg_msgs::PVAJS_array flatStates;
   trajectory2waypoint(trajectory_wp, trajectory_yaw, dt, &flatStates);
   // Add to list for Rviz publishing
   m_wp_traj_list.lock();
