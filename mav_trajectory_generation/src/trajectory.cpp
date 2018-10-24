@@ -38,6 +38,30 @@ bool Trajectory::operator==(const Trajectory& rhs) const {
   }
 }
 
+bool Trajectory::getSegmentIndexFromTime (const double &time, size_t* index) const {
+  // Look for the correct segment.
+  size_t i = 0;
+  double accumulated_time = 0.0;
+  for (i = 0; i < segments_.size(); ++i) {
+    accumulated_time += segments_[i].getTime();
+    // |<--t_accumulated -->|
+    // x----------x---------x
+    //               ^t_start
+    //            |chosen it|
+    // in case t_start falls on a vertex, the iterator right of the vertex is
+    // chosen, hence accumulated_segment_time_ns > t_start
+    if (accumulated_time > time) {
+      *index = i;
+      return true;
+    }
+  }
+  if (time > accumulated_time) {
+    LOG(ERROR) << "Time out of range of the trajectory!";
+  }
+  *index = 0;
+  return false;
+}
+
 Eigen::VectorXd Trajectory::evaluate(double t, int derivative_order) const {
   double accumulated_time = 0.0;
 

@@ -6,7 +6,7 @@
 #include <mav_trajectory_generation_ros/ros_visualization.h>
 #include <mav_trajectory_generation_ros/ros_conversions.h>
 #include "mg_msgs/PVAJS_array.h"
-#include "mg_msgs/minSnapStamped.h"
+#include "mg_msgs/minSnapWpStamped.h"
 
 
 /**
@@ -40,10 +40,10 @@ int main(int argc, char **argv)
   mav_trajectory_generation::deleteMarkersTemplate(frame_id, &deleteMarkers);
 
   //Service client
-  ros::ServiceClient client0 = n.serviceClient<mg_msgs::minSnapStamped>("/minSnap");
-  ros::ServiceClient client1 = n.serviceClient<mg_msgs::minSnapStamped>("/minSnapNlopt");
-  ros::ServiceClient client2 = n.serviceClient<mg_msgs::minSnapStamped>("/minSnapOptTime");
-  mg_msgs::minSnapStamped srv;
+  ros::ServiceClient client0 = n.serviceClient<mg_msgs::minSnapWpStamped>("/minSnap");
+  ros::ServiceClient client1 = n.serviceClient<mg_msgs::minSnapWpStamped>("/minSnapNlopt");
+  ros::ServiceClient client2 = n.serviceClient<mg_msgs::minSnapWpStamped>("/minSnapOptTime");
+  mg_msgs::minSnapWpStamped srv;
 
   //Populate waypoints
   geometry_msgs::PoseStamped Pos;

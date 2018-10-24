@@ -1,6 +1,0 @@
-nav_msgs/Path Waypoints
-std_msgs/Float32 dt_flat_states
----
-mg_msgs/PVAJS_array flatStates
-std_msgs/Float32[] dt_out
-std_msgs/Float32 cost

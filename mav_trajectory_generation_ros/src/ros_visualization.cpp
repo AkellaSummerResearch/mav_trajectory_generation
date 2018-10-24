@@ -107,13 +107,24 @@ void drawMavSampledTrajectoryWithMavMarker(
   marker_array->markers.clear();
 
   visualization_msgs::Marker line_strip;
+  line_strip.id = 0;
   line_strip.type = visualization_msgs::Marker::LINE_STRIP;
   line_strip.color = mav_visualization::Color::Orange();
   line_strip.scale.x = 0.01;
   line_strip.ns = "path";
 
+  double min_displacement = 0.1;
+
   double accumulated_distance = distance;
   Eigen::Vector3d last_position = Eigen::Vector3d::Zero();
+  Eigen::Vector3d last_appended_position = Eigen::Vector3d::Zero();
+  geometry_msgs::Point last_position_msg;
+
+  // Add first point to line strip
+  last_appended_position = flat_states[0].position_W;
+  tf::pointEigenToMsg(last_appended_position, last_position_msg);
+  line_strip.points.push_back(last_position_msg);
+
   for (size_t i = 0; i < flat_states.size(); ++i) {
     const mav_msgs::EigenTrajectoryPoint& flat_state = flat_states[i];
 
@@ -122,6 +133,7 @@ void drawMavSampledTrajectoryWithMavMarker(
       accumulated_distance = 0.0;
       mav_msgs::EigenMavState mav_state;
       mav_msgs::EigenMavStateFromEigenTrajectoryPoint(flat_state, &mav_state);
+      // std::cout << flat_state.getYaw() << std::endl;
 
       visualization_msgs::MarkerArray axes_arrows;
       mav_visualization::drawAxesArrows(mav_state.position_W,
@@ -151,12 +163,23 @@ void drawMavSampledTrajectoryWithMavMarker(
       tmp_marker.transform(mav_state.position_W, mav_state.orientation_W_B);
       tmp_marker.getMarkers(marker_array->markers, 1.0, true);
     }
+
     last_position = flat_state.position_W;
-    geometry_msgs::Point last_position_msg;
-    tf::pointEigenToMsg(last_position, last_position_msg);
-    line_strip.points.push_back(last_position_msg);
+
+    if ((flat_state.position_W - last_appended_position).norm() > min_displacement) {
+      last_appended_position = flat_state.position_W;
+      tf::pointEigenToMsg(last_appended_position, last_position_msg);
+      line_strip.points.push_back(last_position_msg);
+    }
+
+    if(line_strip.points.size() > 16300) {
+      marker_array->markers.push_back(line_strip);
+      line_strip.points.clear();
+      line_strip.id = line_strip.id + 1;
+    }
   }
   marker_array->markers.push_back(line_strip);
+  // ROS_INFO("line_strip size: %d", int(line_strip.points.size()));
 
   std_msgs::Header header;
   header.frame_id = frame_id;

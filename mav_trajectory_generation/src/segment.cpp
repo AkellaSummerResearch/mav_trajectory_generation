@@ -50,10 +50,37 @@ const Polynomial& Segment::operator[](size_t idx) const {
 
 Eigen::VectorXd Segment::evaluate(double t, int derivative) const {
   Eigen::VectorXd result(D_);
+  // Eigen::Vector3d cartesian_part;
   result.setZero();
   for (int d = 0; d < D_; ++d) {
     result[d] = polynomials_[d].evaluate(t, derivative);
+    // if(d < 3) {
+    //   cartesian_part[d] = result(d);
+    // }
   }
+
+  // // Update maximum vel/acc/jerk/snap
+  // if (derivative == derivative_order::VELOCITY) {
+  //   double cur_vel = cartesian_part.norm();
+  //   if (cur_vel > max_vel_) {
+  //     // max_vel_ = cur_vel;
+  //   }
+  // } else if (derivative == derivative_order::ACCELERATION) {
+  //   double cur_acc = cartesian_part.norm();
+  //   if (cur_acc > max_acc_) {
+  //     // max_acc_ = cur_acc;
+  //   }
+  // } else if (derivative == derivative_order::JERK) {
+  //   double cur_jerk = cartesian_part.norm();
+  //   if (cur_jerk > max_jerk_) {
+  //     // max_jerk_ = cur_jerk;
+  //   }
+  // } else if (derivative == derivative_order::SNAP) {
+  //   double cur_snap = cartesian_part.norm();
+  //   if (cur_snap > max_snap_) {
+  //     // max_snap_ = cur_snap;
+  //   }
+  // }
   return result;
 }
 

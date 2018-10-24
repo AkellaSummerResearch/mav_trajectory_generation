@@ -122,6 +122,9 @@ bool PVAJS_array2EigenTrajectoryPoint(
     state.acceleration_W = Vector3_2Eigen(flatStates.PVAJS_array[i].Acc);
     state.jerk_W = Vector3_2Eigen(flatStates.PVAJS_array[i].Jerk);
     state.snap_W = Vector3_2Eigen(flatStates.PVAJS_array[i].Snap);
+    state.setFromYaw(flatStates.PVAJS_array[i].yaw);
+    state.setFromYawRate(flatStates.PVAJS_array[i].yaw_dot);
+    state.setFromYawAcc(flatStates.PVAJS_array[i].yaw_ddot);
     state.time_from_start_ns = flatStates.PVAJS_array[i].time;
     states->push_back(state);
    }

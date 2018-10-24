@@ -48,7 +48,7 @@ cs_add_library(${PROJECT_NAME}
 
 #  #Create service types
 # add_service_files( FILES
-#   minSnapStamped.srv
+#   minSnapWpStamped.srv
 # )
 
 

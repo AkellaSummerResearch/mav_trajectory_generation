@@ -69,6 +69,8 @@ class Trajectory {
     *segments = segments_;
   }
 
+  bool getSegmentIndexFromTime (const double &time, size_t* index) const;
+
   const Segment::Vector& segments() const { return segments_; }
 
   double getMinTime() const { return 0.0; }

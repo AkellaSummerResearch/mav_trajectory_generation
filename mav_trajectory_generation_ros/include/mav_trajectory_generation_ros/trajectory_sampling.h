@@ -23,6 +23,7 @@
 
 #include <mav_msgs/eigen_mav_msgs.h>
 #include <mav_trajectory_generation/trajectory.h>
+#include <mav_trajectory_generation_ros/structs.h>
 
 namespace mav_trajectory_generation {
 
@@ -53,6 +54,18 @@ bool sampleSegmentAtTime(const Segment& segment, double sample_time,
 template<class T>
 bool sampleFlatStateAtTime(const T& type, double sample_time,
                            mav_msgs::EigenTrajectoryPoint* state);
+
+bool sampleTrajectoryInRange(const Trajectory& trajectory, double min_time,
+                             double max_time, double sampling_interval,
+                             mav_msgs::EigenTrajectoryPointVector* states,
+                             std::vector<maxValues> *maxValSegments,
+                             maxValues *maxValTraj);
+
+bool sampleWholeTrajectory(const Trajectory& trajectory,
+                           double sampling_interval,
+                           mav_msgs::EigenTrajectoryPoint::Vector* states,
+                           std::vector<maxValues> *maxValSegments,
+                           maxValues *maxValTraj);
 
 }  // namespace mav_trajectory_generation
 

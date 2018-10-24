@@ -154,6 +154,7 @@ void drawAxesArrows(const Eigen::Vector3d& p, const Eigen::Quaterniond& q,
   Eigen::Vector3d origin;
   origin.setZero();
 
+  // std::cout << q.x() << " " << q.y() << " " << q.z() << " " << q.w() << std::endl;
   drawArrowPoints(origin + p, q * Eigen::Vector3d::UnitX() * scale + p,
                   Color::Red(), diameter, &marker_array->markers[0]);
   drawArrowPoints(origin + p, q * Eigen::Vector3d::UnitY() * scale + p,

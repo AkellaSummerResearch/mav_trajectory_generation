@@ -155,4 +155,112 @@ bool sampleFlatStateAtTime(const T& type, double sample_time,
   return true;
 }
 
+bool sampleTrajectoryInRange(const Trajectory& trajectory, double min_time,
+                             double max_time, double sampling_interval,
+                             mav_msgs::EigenTrajectoryPointVector* states,
+                             std::vector<maxValues> *maxValSegments,
+                             maxValues *maxValTraj) {
+  CHECK_NOTNULL(states);
+  if (min_time < trajectory.getMinTime() ||
+      max_time > trajectory.getMaxTime()) {
+    LOG(ERROR) << "Sample time should be within [" << trajectory.getMinTime()
+               << " " << trajectory.getMaxTime() << "] but is [" << min_time
+               << " " << max_time << "]";
+    return false;
+  }
+
+  if (trajectory.D() < 3) {
+    LOG(ERROR) << "Dimension has to be 3 or 4, but is " << trajectory.D();
+    return false;
+  }
+
+  std::vector<Eigen::VectorXd> position, velocity, acceleration, jerk, snap,
+      yaw, yaw_rate;
+
+  trajectory.evaluateRange(min_time, max_time, sampling_interval,
+                           derivative_order::POSITION, &position);
+  trajectory.evaluateRange(min_time, max_time, sampling_interval,
+                           derivative_order::VELOCITY, &velocity);
+  trajectory.evaluateRange(min_time, max_time, sampling_interval,
+                           derivative_order::ACCELERATION, &acceleration);
+  trajectory.evaluateRange(min_time, max_time, sampling_interval,
+                           derivative_order::JERK, &jerk);
+  trajectory.evaluateRange(min_time, max_time, sampling_interval,
+                           derivative_order::SNAP, &snap);
+
+  size_t n_samples = position.size();
+
+  states->resize(n_samples);
+  std::vector<maxValues> local_maxValSeg(trajectory.segments().size());
+  maxValues local_maxValTraj;
+  size_t segment_idx;
+  for (size_t i = 0; i < n_samples; ++i) {
+    mav_msgs::EigenTrajectoryPoint& state = (*states)[i];
+    double time_from_start = min_time + sampling_interval * double(i);
+    trajectory.getSegmentIndexFromTime(time_from_start, &segment_idx);
+
+    state.position_W = position[i].head<3>();
+    state.velocity_W = velocity[i].head<3>();
+    state.acceleration_W = acceleration[i].head<3>();
+    state.jerk_W = jerk[i].head<3>();
+    state.snap_W = snap[i].head<3>();
+    state.time_from_start_ns = static_cast<int64_t>(
+        (time_from_start) * kNumNanosecondsPerSecond);
+    if (trajectory.D() > 3) {
+      state.setFromYaw(position[i](3));
+      state.setFromYawRate(velocity[i](3));
+      state.setFromYawAcc(acceleration[i](3));
+    }
+
+
+    double vel = state.velocity_W.norm();
+    double acc = state.acceleration_W.norm();
+    double jerk = state.jerk_W.norm();
+    double snap = state.snap_W.norm();
+    if(vel > local_maxValSeg[segment_idx].max_vel) {
+      local_maxValSeg[segment_idx].max_vel = vel;
+    }
+    if(acc > local_maxValSeg[segment_idx].max_acc) {
+      local_maxValSeg[segment_idx].max_acc = acc;
+    }
+    if(jerk > local_maxValSeg[segment_idx].max_jerk) {
+      local_maxValSeg[segment_idx].max_jerk = jerk;
+    }
+    if(snap > local_maxValSeg[segment_idx].max_snap) {
+      local_maxValSeg[segment_idx].max_snap = snap;
+    }
+  }
+
+  for (size_t i = 0; i < local_maxValSeg.size(); i++) {
+    if(local_maxValSeg[i].max_vel > local_maxValTraj.max_vel) {
+      local_maxValTraj.max_vel = local_maxValSeg[i].max_vel;
+    }
+    if(local_maxValSeg[i].max_acc > local_maxValTraj.max_acc) {
+      local_maxValTraj.max_acc = local_maxValSeg[i].max_acc;
+    }
+    if(local_maxValSeg[i].max_jerk > local_maxValTraj.max_jerk) {
+      local_maxValTraj.max_jerk = local_maxValSeg[i].max_jerk;
+    }
+    if(local_maxValSeg[i].max_snap > local_maxValTraj.max_snap) {
+      local_maxValTraj.max_snap = local_maxValSeg[i].max_snap;
+    }
+  }
+
+  *maxValSegments = local_maxValSeg;
+  *maxValTraj = local_maxValTraj;
+  return true;
+}
+
+bool sampleWholeTrajectory(const Trajectory& trajectory,
+                           double sampling_interval,
+                           mav_msgs::EigenTrajectoryPoint::Vector* states,
+                           std::vector<maxValues> *maxValSegments,
+                           maxValues *maxValTraj) {
+  const double min_time = trajectory.getMinTime();
+  const double max_time = trajectory.getMaxTime();
+
+  return sampleTrajectoryInRange(trajectory, min_time, max_time,
+                                 sampling_interval, states, maxValSegments, maxValTraj);
+}
+
 }  // namespace mav_trajectory_generation
