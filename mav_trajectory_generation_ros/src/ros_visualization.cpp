@@ -283,9 +283,9 @@ void drawWaypoints(
   line_strip.type = visualization_msgs::Marker::SPHERE;
   line_strip.action = visualization_msgs::Marker::ADD;
   line_strip.color = mav_visualization::Color::Red();
-  line_strip.scale.x = 0.1;
-  line_strip.scale.y = 0.1;
-  line_strip.scale.z = 0.1;
+  line_strip.scale.x = 0.2;
+  line_strip.scale.y = 0.2;
+  line_strip.scale.z = 0.2;
   line_strip.ns = "path";
   line_strip.header.frame_id = frame_id;
   line_strip.header.stamp = ros::Time::now();

@@ -426,9 +426,11 @@ void RvizPubThread(ros::Publisher *pathMarker_pub, ros::Publisher *wpMarker_pub)
     // If new trajectory, create Rviz markers
     if (new_traj) {
       mav_msgs::EigenTrajectoryPoint::Vector new_states;
-      mav_trajectory_generation::PVAJS_array2EigenTrajectoryPoint(wp_and_traj.flatStates_, &new_states);
+      if(wp_and_traj.flatStates_.PVAJS_array.size() > 0) {
+        mav_trajectory_generation::PVAJS_array2EigenTrajectoryPoint(wp_and_traj.flatStates_, &new_states);
+        mav_trajectory_generation::drawMavSampledTrajectory(new_states, distance, frame_id, &TrajMarkers);
+      }
       mav_trajectory_generation::drawWaypoints(wp_and_traj.Waypoints_, frame_id, &WaypointMarkers);
-      mav_trajectory_generation::drawMavSampledTrajectory(new_states, distance, frame_id, &TrajMarkers);
     }
 
     //Publish current markers
