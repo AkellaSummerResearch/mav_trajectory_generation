@@ -8,6 +8,7 @@
 #include "minSnapFunctions/minSnapFcns.h"
 #include <mav_trajectory_generation/polynomial_optimization_nonlinear.h>
 #include <mav_trajectory_generation_ros/structs.h>
+#include <std_srvs/Empty.h>
 #include "mg_msgs/minSnapWpStamped.h"
 #include "mg_msgs/minSnapWpPVAJ.h"
 
@@ -15,7 +16,8 @@
 #include <thread>
 
 std::queue<waypoint_and_trajectory> wp_traj_list;
-std::mutex m_wp_traj_list;
+bool delete_markers_;
+std::mutex m_wp_traj_list, m_delete_markers;
 
 bool minSnapNloptService(mg_msgs::minSnapWpStamped::Request  &req,
                          mg_msgs::minSnapWpStamped::Response &res) {
@@ -410,7 +412,7 @@ void RvizPubThread(ros::Publisher *pathMarker_pub, ros::Publisher *wpMarker_pub)
 
   waypoint_and_trajectory wp_and_traj;
   bool new_traj = false;
-  double distance = 1.0;
+  double distance = std::numeric_limits<double>::infinity();
   std::string frame_id = "map";
   visualization_msgs::MarkerArray TrajMarkers, WaypointMarkers;
 
@@ -423,12 +425,20 @@ void RvizPubThread(ros::Publisher *pathMarker_pub, ros::Publisher *wpMarker_pub)
       }
     m_wp_traj_list.unlock();
 
+    m_delete_markers.lock();
+      if(delete_markers_) {
+        TrajMarkers.markers.clear();
+        WaypointMarkers.markers.clear();
+        delete_markers_ = false;
+      }
+    m_delete_markers.unlock();
+
     // If new trajectory, create Rviz markers
     if (new_traj) {
       mav_msgs::EigenTrajectoryPoint::Vector new_states;
       if(wp_and_traj.flatStates_.PVAJS_array.size() > 0) {
         mav_trajectory_generation::PVAJS_array2EigenTrajectoryPoint(wp_and_traj.flatStates_, &new_states);
-        mav_trajectory_generation::drawMavSampledTrajectory(new_states, distance, frame_id, &TrajMarkers);
+        mav_trajectory_generation::drawTrajectory(new_states, frame_id, wp_and_traj.traj_name_, &TrajMarkers);
       }
       mav_trajectory_generation::drawWaypoints(wp_and_traj.Waypoints_, frame_id, &WaypointMarkers);
     }
@@ -441,22 +451,18 @@ void RvizPubThread(ros::Publisher *pathMarker_pub, ros::Publisher *wpMarker_pub)
   }
 }
 
-/**
- * This tutorial demonstrates simple sending of messages over the ROS system.
- */
+bool DeleteMarkers(std_srvs::Empty::Request  &req,
+                   std_srvs::Empty::Response &res) {
+    m_delete_markers.lock();
+      delete_markers_ = true;
+    m_delete_markers.unlock();
+}
+
+
 int main(int argc, char **argv)
 {
-  /**
-   * The ros::init() function needs to see argc and argv so that it can perform
-   * any ROS arguments and name remapping that were provided at the command line.
-   * For programmatic remappings you can use a different version of init() which takes
-   * remappings directly, but for most command-line programs, passing argc and argv is
-   * the easiest way to do it.  The third argument to init() is the name of the node.
-   *
-   * You must call one of the versions of ros::init() before using any other
-   * part of the ROS system.
-   */
-  ros::init(argc, argv, "talker");
+
+  ros::init(argc, argv, "~");
 
   //ROS initialization
   ros::NodeHandle n;
@@ -477,18 +483,12 @@ int main(int argc, char **argv)
   ros::ServiceServer minSnap_Srv3 = n.advertiseService("minSnapOptTimeExtended", minSnapExtendedOptTimeService);
   ros::ServiceServer minSnap_Srv4 = n.advertiseService("minSnapNlopt", minSnapNloptService);
   ros::ServiceServer minSnap_Srv5 = n.advertiseService("minSnapNloptExtended", minSnapNloptExtendedService);
+  ros::ServiceServer delete_markers_srv = n.advertiseService("delete_markers", DeleteMarkers);
 
   ros::Rate loop_rate(50);
 
-  /**
-   * A count of how many messages we have sent. This is used to create
-   * a unique string for each message.
-   */
   while (ros::ok())
   {
-
-    // Waypoint_pub.publish(Waypoints);
-
     ros::spinOnce();
 
     loop_rate.sleep();

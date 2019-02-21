@@ -5,6 +5,8 @@ set(CMAKE_MACOSX_RPATH 0)
 set(CMAKE_MODULE_PATH "/${CMAKE_SOURCE_DIR}/mav_trajectory_generation/cmake/modules;
                         ${CMAKE_MODULE_PATH}")
 
+message("cmake_path ${CMAKE_MODULE_PATH}")
+
 set(CMAKE_CXX_FLAGS "-std=c++11 -fopenmp -march=native -msse2 -DNDEBUG ${CMAKE_CXX_FLAGS}")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
@@ -19,6 +21,7 @@ find_package(catkin_simple REQUIRED COMPONENTS
   genmsg
   mav_planning_msgs
   mg_msgs
+  std_srvs
 )
 
 find_package(Cholmod REQUIRED)

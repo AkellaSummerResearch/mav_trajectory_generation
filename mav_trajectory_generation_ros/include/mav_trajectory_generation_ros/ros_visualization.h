@@ -57,9 +57,10 @@ void drawMavSampledTrajectoryWithMavMarker(
     const mav_visualization::MarkerGroup& additional_marker,
     visualization_msgs::MarkerArray* marker_array);
 
-void drawTrajectoryFromWaypoints(
-    const nav_msgs::Path Waypoints, 
+void drawTrajectory(
+    const mav_msgs::EigenTrajectoryPoint::Vector& flat_states, 
     const std::string& frame_id,
+    const std::string& ns,
     visualization_msgs::MarkerArray* marker_array);
 
 void drawWaypoints(

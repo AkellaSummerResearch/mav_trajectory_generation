@@ -94,6 +94,7 @@ void yaw2vertex_minAcc(const nav_msgs::Path &Waypoints,
         yaw = yaw - 2*M_PI;
       }
     }
+    // std::cout << "Yaw: [" << i << "] = " << yaw << "\t\t" << prev_yaw - yaw << std::endl;
 
     if ((i == 0) || (i == n_w -1)){
       start_end.makeStartOrEnd(yaw, derivative_to_optimize);
@@ -123,13 +124,14 @@ void yaw2vertex_minAcc(const std::vector<mg_msgs::PVAJ_request> &PVAJyaw,
     yaw = PVAJyaw[i].yaw;
 
     if (i > 0) {
-      if (prev_yaw - yaw > M_PI) {
+      while (prev_yaw - yaw > M_PI) {
         yaw = yaw + 2*M_PI;
-      } else if( prev_yaw - yaw < -M_PI) {
+      } 
+      while( prev_yaw - yaw < -M_PI) {
         yaw = yaw - 2*M_PI;
       }
     }
-    // std::cout << "Yaw: [" << i << "] = " << yaw << std::endl;
+    // std::cout << "Yaw: [" << i << "] = " << yaw << "\t\t" << prev_yaw - yaw << std::endl;
 
     if ((i == 0) || (i == n_w -1)){
       start_end.makeStartOrEnd(yaw, derivative_to_optimize);

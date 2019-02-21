@@ -20,15 +20,19 @@ class waypoint_and_trajectory {
  public:
   nav_msgs::Path Waypoints_;
   mg_msgs::PVAJS_array flatStates_;
+  std::string traj_name_;
 
   waypoint_and_trajectory() {}
   waypoint_and_trajectory(nav_msgs::Path Waypoints,
-                          mg_msgs::PVAJS_array flatStates) {
+                          mg_msgs::PVAJS_array flatStates,
+                          std::string traj_name = "") {
     Waypoints_ = Waypoints;
     flatStates_ = flatStates;
+    traj_name_ = traj_name;
   }
   waypoint_and_trajectory(std::vector<mg_msgs::PVAJ_request> PVAJ_array,
-                          mg_msgs::PVAJS_array flatStates) {
+                          mg_msgs::PVAJS_array flatStates,
+                          std::string traj_name = "") {
   	for (uint i = 0; i < PVAJ_array.size(); i++) {
   		geometry_msgs::PoseStamped pose;
   		pose.pose.position = PVAJ_array[i].Pos;
@@ -37,6 +41,7 @@ class waypoint_and_trajectory {
   		Waypoints_.poses.push_back(pose);
   	}
     flatStates_ = flatStates;
+    traj_name_ = traj_name;
   }
 };
 

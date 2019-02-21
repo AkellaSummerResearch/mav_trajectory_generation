@@ -137,7 +137,7 @@ void drawMavSampledTrajectoryWithMavMarker(
 
       visualization_msgs::MarkerArray axes_arrows;
       mav_visualization::drawAxesArrows(mav_state.position_W,
-                                        mav_state.orientation_W_B, 0.3, 0.3,
+                                        mav_state.orientation_W_B, 0.15, 0.15,
                                         &axes_arrows);
       internal::appendMarkers(axes_arrows, "pose", marker_array);
 
@@ -188,80 +188,51 @@ void drawMavSampledTrajectoryWithMavMarker(
                                 marker_array);
 }
 
-void drawTrajectoryFromWaypoints(
-    const nav_msgs::Path Waypoints, 
+void setMarkerArrayNamespace(const std::string ns, visualization_msgs::MarkerArray* marker_array) {
+  for(uint i = 0; i < marker_array->markers.size(); i++) {
+    marker_array->markers[i].ns = ns;
+  }
+}
+
+void drawTrajectory(
+    const mav_msgs::EigenTrajectoryPoint::Vector& flat_states, 
     const std::string& frame_id,
+    const std::string& ns,
     visualization_msgs::MarkerArray* marker_array) {
   CHECK_NOTNULL(marker_array);
-  marker_array->markers.clear();
+  // marker_array->markers.clear();
 
   visualization_msgs::Marker line_strip;
+  line_strip.id = 0;
   line_strip.type = visualization_msgs::Marker::LINE_STRIP;
   line_strip.color = mav_visualization::Color::Orange();
   line_strip.scale.x = 0.01;
-  line_strip.ns = "path";
+  line_strip.ns = ns;
 
-  //Get the number of requested waypoints
-  int n_w = Waypoints.poses.size();
+  double min_displacement = 0.1;
 
-  // double accumulated_distance = distance;
-  // Eigen::Vector3d last_position = Eigen::Vector3d::Zero();
-  Eigen::Vector3d CurPoint;
-  for (size_t i = 0; i < n_w; ++i) {
-    CurPoint << Waypoints.poses[i].pose.position.x,
-                Waypoints.poses[i].pose.position.y,
-                Waypoints.poses[i].pose.position.z;
-    // accumulated_distance += (last_position - CurPoint).norm();
-    // if (accumulated_distance > distance) {
-    //   accumulated_distance = 0.0;
-//       mav_msgs::EigenMavState mav_state;
-//       mav_msgs::EigenMavStateFromEigenTrajectoryPoint(flat_state, &mav_state);
+  Eigen::Vector3d last_position = Eigen::Vector3d::Zero();
+  Eigen::Vector3d last_appended_position = Eigen::Vector3d::Zero();
+  geometry_msgs::Point last_position_msg;
 
-// void EigenMavStateFromEigenTrajectoryPoint(
-//     const Eigen::Vector3d& acceleration, 
-//     const Eigen::Vector3d& jerk,
-//     const Eigen::Vector3d& snap, 
-//     double yaw, 
-//     double yaw_rate,
-//     double yaw_acceleration, 
-//     double magnitude_of_gravity,
-//     Eigen::Quaterniond* orientation, 
-//     Eigen::Vector3d* acceleration_body,
-//     Eigen::Vector3d* angular_velocity_body,
-//     Eigen::Vector3d* angular_acceleration_body)
+  // Add first point to line strip
+  last_appended_position = flat_states[0].position_W;
+  tf::pointEigenToMsg(last_appended_position, last_position_msg);
+  line_strip.points.push_back(last_position_msg);
+  for (size_t i = 0; i < flat_states.size(); ++i) {
+    const mav_msgs::EigenTrajectoryPoint& flat_state = flat_states[i];
+    
+    if ((flat_state.position_W - last_appended_position).norm() > min_displacement) {
+      last_appended_position = flat_state.position_W;
+      tf::pointEigenToMsg(last_appended_position, last_position_msg);
+      line_strip.points.push_back(last_position_msg);
+    }
 
-//       visualization_msgs::MarkerArray axes_arrows;
-//       mav_visualization::drawAxesArrows(mav_state.position_W,
-//                                         mav_state.orientation_W_B, 0.3, 0.3,
-//                                         &axes_arrows);
-//       internal::appendMarkers(axes_arrows, "pose", marker_array);
-
-//       visualization_msgs::Marker arrow;
-//       mav_visualization::drawArrowPoints(
-//           flat_state.position_W,
-//           flat_state.position_W + flat_state.acceleration_W,
-//           mav_visualization::Color((190.0 / 255.0), (81.0 / 255.0),
-//                                    (80.0 / 255.0)),
-//           0.3, &arrow);
-//       arrow.ns = positionDerivativeToString(derivative_order::ACCELERATION);
-//       marker_array->markers.push_back(arrow);
-
-//       mav_visualization::drawArrowPoints(
-//           flat_state.position_W, flat_state.position_W + flat_state.velocity_W,
-//           mav_visualization::Color((80.0 / 255.0), (172.0 / 255.0),
-//                                    (196.0 / 255.0)),
-//           0.3, &arrow);
-//       arrow.ns = positionDerivativeToString(derivative_order::VELOCITY);
-//       marker_array->markers.push_back(arrow);
-
-//       mav_visualization::MarkerGroup tmp_marker(additional_marker);
-//       tmp_marker.transform(mav_state.position_W, mav_state.orientation_W_B);
-//       tmp_marker.getMarkers(marker_array->markers, 1.0, true);
-    // }
-//     last_position = flat_state.position_W;
-    geometry_msgs::Point last_position_msg;
-    tf::pointEigenToMsg(CurPoint, last_position_msg);
-    line_strip.points.push_back(last_position_msg);
+    if(line_strip.points.size() > 16300) {
+      marker_array->markers.push_back(line_strip);
+      line_strip.points.clear();
+      line_strip.id = line_strip.id + 1;
+    }
   }
   marker_array->markers.push_back(line_strip);
 
@@ -283,9 +254,9 @@ void drawWaypoints(
   line_strip.type = visualization_msgs::Marker::SPHERE;
   line_strip.action = visualization_msgs::Marker::ADD;
   line_strip.color = mav_visualization::Color::Red();
-  line_strip.scale.x = 0.2;
-  line_strip.scale.y = 0.2;
-  line_strip.scale.z = 0.2;
+  line_strip.scale.x = 0.05;
+  line_strip.scale.y = 0.05;
+  line_strip.scale.z = 0.05;
   line_strip.ns = "path";
   line_strip.header.frame_id = frame_id;
   line_strip.header.stamp = ros::Time::now();
