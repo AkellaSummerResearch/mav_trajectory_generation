@@ -48,15 +48,15 @@ target_link_libraries(polynomial_timing_evaluation ${PROJECT_NAME} ${CHOLMOD_LIB
 #########
 # TESTS #
 #########
-catkin_add_gtest(test_polynomial
-  test/test_polynomial.cpp
-)
-target_link_libraries(test_polynomial ${PROJECT_NAME} ${catkin_LIBRARIES} ${CHOLMOD_LIBRARIES} ${SPQR_LIBRARIES})
+# catkin_add_gtest(test_polynomial
+#   test/test_polynomial.cpp
+# )
+# target_link_libraries(test_polynomial ${PROJECT_NAME} ${catkin_LIBRARIES} ${CHOLMOD_LIBRARIES} ${SPQR_LIBRARIES})
 
-catkin_add_gtest(test_polynomial_optimization
-  test/test_polynomial_optimization.cpp
-)
-target_link_libraries(test_polynomial_optimization ${PROJECT_NAME} ${catkin_LIBRARIES} ${CHOLMOD_LIBRARIES} ${SPQR_LIBRARIES})
+# catkin_add_gtest(test_polynomial_optimization
+#   test/test_polynomial_optimization.cpp
+# )
+# target_link_libraries(test_polynomial_optimization ${PROJECT_NAME} ${catkin_LIBRARIES} ${CHOLMOD_LIBRARIES} ${SPQR_LIBRARIES})
 
 ##########
 # EXPORT #

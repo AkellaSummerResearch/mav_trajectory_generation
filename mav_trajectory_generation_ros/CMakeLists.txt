@@ -99,10 +99,10 @@ target_link_libraries(client_Node ${catkin_LIBRARIES} ${CHOLMOD_LIBRARIES} ${SPQ
 #########
 # TESTS #
 #########
-catkin_add_gtest(test_feasibility
-  test/test_feasibility.cpp
-)
-target_link_libraries(test_feasibility ${PROJECT_NAME} ${catkin_LIBRARIES})
+# catkin_add_gtest(test_feasibility
+#   test/test_feasibility.cpp
+# )
+# target_link_libraries(test_feasibility ${PROJECT_NAME} ${catkin_LIBRARIES})
 
 
 
